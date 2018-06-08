@@ -45,13 +45,13 @@ class Cell {
     }
 
     /**
-      * Returns the next state of this cell based on how many neighbors are
-      * alive.
-      *
-      * @param {number} numLiveNeighbors - The number of this cell's neighbors
-      *     that are alive.
-      * @return {Cell} The next state of this cell.
-      */
+     * Returns the next state of this cell based on how many neighbors are
+     * alive.
+     *
+     * @param {number} numLiveNeighbors - The number of this cell's neighbors
+     *     that are alive.
+     * @return {Cell} The next state of this cell.
+     */
     next(numLiveNeighbors) {
         if (this._alive && (numLiveNeighbors < 2 || numLiveNeighbors > 3)) {
             return new Cell(this._row, this._column, false);

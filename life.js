@@ -1,14 +1,14 @@
 "use strict";
 
 /**
-  * The Game of Life.
-  */
+ * The Game of Life.
+ */
 class Life {
     /**
-      * Creates a new Game of Life.
-      *
-      * @param {HTMLCanvasElement} canvas - The canvas to show the game on.
-      */
+     * Creates a new Game of Life.
+     *
+     * @param {HTMLCanvasElement} canvas - The canvas to show the game on.
+     */
     constructor(canvas) {
         this._board = new Board();
         this._grid = new Grid(this._board, canvas);
@@ -16,8 +16,8 @@ class Life {
     }
 
     /**
-      * Plays the Game of Life if it's paused.
-      */
+     * Plays the Game of Life if it's paused.
+     */
     play() {
         if (this._ticker == 0) {
             this._ticker = window.setInterval(() => {
@@ -28,8 +28,8 @@ class Life {
     }
 
     /**
-      * Pauses the Game of Life if it's playing.
-      */
+     * Pauses the Game of Life if it's playing.
+     */
     pause() {
         if (this._ticker != 0) {
             window.clearInterval(this._ticker);
@@ -38,10 +38,10 @@ class Life {
     }
 
     /**
-      * Returns whether the Game of Life is playing or not.
-      *
-      * @return {boolean} True if the game is playing, otherwise false.
-      */
+     * Returns whether the Game of Life is playing or not.
+     *
+     * @return {boolean} True if the game is playing, otherwise false.
+     */
     get playing() {
         return this._ticker != 0;
     }

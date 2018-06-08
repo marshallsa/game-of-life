@@ -1,25 +1,25 @@
 "use strict";
 
 /**
-  * The width and height of each cell in pixels.
-  */
+ * The width and height of each cell in pixels.
+ */
 const CELL_SIZE = 15;
 
 /**
-  * The color of the gridlines.
-  */
+ * The color of the gridlines.
+ */
 const GRID_COLOR = "#eee";
 
 /**
-  * Shows cells from a Game of Life in a grid on a canvas.
-  */
+ * Shows cells from a Game of Life in a grid on a canvas.
+ */
 class Grid {
     /**
-      * Creates a new grid.
-      *
-      * @param {Board} board - The board for the Game of Life.
-      * @param {HTMLCanvasElement} canvas - The canvas to show the board on.
-      */
+     * Creates a new grid.
+     *
+     * @param {Board} board - The board for the Game of Life.
+     * @param {HTMLCanvasElement} canvas - The canvas to show the board on.
+     */
     constructor(board, canvas) {
         this._board = board;
         this._canvas = canvas;
@@ -31,8 +31,8 @@ class Grid {
     }
 
     /**
-      * Draws the grid.
-      */
+     * Draws the grid.
+     */
     draw() {
         let ctx = this._ctx;
         ctx.clearRect(-0.5, -0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
@@ -41,8 +41,8 @@ class Grid {
     }
 
     /**
-      * Draws the gridlines.
-      */
+     * Draws the gridlines.
+     */
     _drawGridlines() {
         let ctx = this._ctx;
         ctx.lineWidth = 1;
@@ -66,8 +66,8 @@ class Grid {
     }
 
     /**
-      * Draws the live cells.
-      */
+     * Draws the live cells.
+     */
     _drawCells() {
         let ctx = this._ctx;
         for (let cell of this._board) {
@@ -76,8 +76,8 @@ class Grid {
     }
 
     /**
-      * Resizes the canvas to fit the window size.
-      */
+     * Resizes the canvas to fit the window size.
+     */
     _resize() {
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
@@ -85,10 +85,10 @@ class Grid {
     }
 
     /**
-      * Toggles the cell that was clicked.
-      *
-      * @param {MouseEvent} event - The click event.
-      */
+     * Toggles the cell that was clicked.
+     *
+     * @param {MouseEvent} event - The click event.
+     */
     _click(event) {
         let row = Math.floor(event.clientY / CELL_SIZE);
         let column = Math.floor(event.clientX / CELL_SIZE);
