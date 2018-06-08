@@ -27,6 +27,7 @@ class Grid {
 
         this._resize();
         window.addEventListener("resize", () => this._resize());
+        canvas.addEventListener("click", (event) => this._click(event));
     }
 
     /**
@@ -80,6 +81,18 @@ class Grid {
     _resize() {
         this._canvas.width = window.innerWidth;
         this._canvas.height = window.innerHeight;
+        this.draw();
+    }
+
+    /**
+      * Toggles the cell that was clicked.
+      *
+      * @param {MouseEvent} event - The click event.
+      */
+    _click(event) {
+        let row = Math.floor(event.clientY / CELL_SIZE);
+        let column = Math.floor(event.clientX / CELL_SIZE);
+        this._board.toggle(row, column);
         this.draw();
     }
 }
