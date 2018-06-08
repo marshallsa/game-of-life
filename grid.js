@@ -2,11 +2,15 @@
 
 /**
  * The width and height of each cell in pixels.
+ *
+ * @type {number}
  */
 const CELL_SIZE = 15;
 
 /**
  * The color of the gridlines.
+ *
+ * @type {string}
  */
 const GRID_COLOR = "#eee";
 
