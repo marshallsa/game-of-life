@@ -18,12 +18,29 @@ class Life {
         this._grid.resize(window.innerWidth, window.innerHeight);
         window.addEventListener("resize", () => this._grid.resize(window.innerWidth, window.innerHeight));
 
-        // Add event listeners for clicking and panning.
-        this._panStart = new Point(0, 0);
-        this._lastMouse = new Point(0, 0);
-        canvas.addEventListener("mousedown", (event) => this._onMouseDown(event));
-        canvas.addEventListener("mousemove", (event) => this._onMouseMove(event));
-        canvas.addEventListener("mouseup", (event) => this._onMouseUp(event));
+        // Prepare to click or pan when the left mouse button is pressed.
+        canvas.addEventListener("mousedown", (event) => {
+            if (event.button == 0) {
+                this._drag = new DragMotion(event.clientX, event.clientY);
+            }
+        });
+
+        // Pan if the mouse is dragged with the left mouse button down.
+        canvas.addEventListener("mousemove", (event) => {
+            if (event.buttons & 1) {
+                let [dx, dy] = this._drag.update(event.clientX, event.clientY);
+                this._grid.translate(dx, dy);
+            }
+        });
+
+        // Toggle a cell when the left mouse button is clicked without panning.
+        canvas.addEventListener("mouseup", (event) => {
+            if (event.button == 0 && !this._drag.moved) {
+                let cell = this._grid.get(event.clientX, event.clientY);
+                this._board.toggle(cell.row, cell.column);
+                this._grid.draw();
+            }
+        });
     }
 
     /**
@@ -55,48 +72,6 @@ class Life {
      */
     get playing() {
         return this._ticker != 0;
-    }
-
-    /**
-     * Handles mousedown events on the canvas.
-     *
-     * @param {MouseEvent} event - The mousedown event.
-     */
-    _onMouseDown(event) {
-        // Prepare to click or pan when the left mouse button is pressed.
-        if (event.button == 0) {
-            this._panStart = new Point(event.clientX, event.clientY);
-            this._lastMouse = new Point(event.clientX, event.clientY);
-        }
-    }
-
-    /**
-     * Handles mousemove events on the canvas.
-     *
-     * @param {MouseEvent} event - The mousemove event.
-     */
-    _onMouseMove(event) {
-        // Pan if the mouse is moved with the left mouse button down.
-        if (event.buttons & 1) {
-            let dx = event.clientX - this._lastMouse.x;
-            let dy = event.clientY - this._lastMouse.y;
-            this._lastMouse = new Point(event.clientX, event.clientY);
-            this._grid.translate(dx, dy);
-        }
-    }
-
-    /**
-     * Handles mouseup events on the canvas.
-     *
-     * @param {MouseEvent} event - The mouseup event.
-     */
-    _onMouseUp(event) {
-        // Toggle a cell when the left mouse button is clicked without panning.
-        if (event.button == 0 && this._panStart.equals(this._lastMouse)) {
-            let cell = this._grid.get(event.clientX, event.clientY);
-            this._board.toggle(cell.row, cell.column);
-            this._grid.draw();
-        }
     }
 }
 

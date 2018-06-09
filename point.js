@@ -46,6 +46,16 @@ class Point {
     }
 
     /**
+     * Returns the distance from this point to the given point.
+     *
+     * @param {number} point - The point to calculate the distance to.
+     * @return {number} The distance from this point to the given point.
+     */
+    distance(point) {
+        return Math.sqrt(Math.pow(this.x - point.x, 2) + Math.pow(this.y - point.y, 2));
+    }
+
+    /**
      * Returns true if this point is equal to the given point, otherwise false.
      *
      * @param {Point} point - The point to check equality with.
