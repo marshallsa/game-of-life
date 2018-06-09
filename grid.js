@@ -28,6 +28,7 @@ class Grid {
         this._board = board;
         this._canvas = canvas;
         this._ctx = canvas.getContext("2d");
+        this._translation = new Point(0, 0);
     }
 
     /**
@@ -39,19 +40,33 @@ class Grid {
     resize(width, height) {
         this._canvas.width = width;
         this._canvas.height = height;
+        this._ctx.translate(this._translation.x, this._translation.y);
         this.draw();
     }
 
     /**
-     * Returns the cell at the given x and y coordinates in the grid.
+     * Translates the visible region of the grid on the canvas.
+     *
+     * @param {number} x - The number of pixels to translate horizontally.
+     * @param {number} y - The number of pixels to translate vertically.
+     */
+    translate(x, y) {
+        this._ctx.translate(x, y);
+        this._translation = this._translation.translate(x, y);
+        this.draw();
+    }
+
+    /**
+     * Returns the cell at the given x and y coordinates on the canvas.
      *
      * @param {number} x - An x coordinate in the grid.
      * @param {number} y - A y coordinate in the grid.
      * @return {Cell} The cell at the given x and y coordinates.
      */
     get(x, y) {
-        let row = Math.floor(y / CELL_SIZE);
-        let column = Math.floor(x / CELL_SIZE);
+        let gridPoint = this._canvasToGrid(x, y);
+        let row = Math.floor(gridPoint.y / CELL_SIZE);
+        let column = Math.floor(gridPoint.x / CELL_SIZE);
         return this._board.get(row, column);
     }
 
@@ -60,7 +75,8 @@ class Grid {
      */
     draw() {
         let ctx = this._ctx;
-        ctx.clearRect(-0.5, -0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
+        let origin = this._canvasToGrid(0, 0);
+        ctx.clearRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
         this._drawCells();
         this._drawGridlines();
     }
@@ -73,19 +89,23 @@ class Grid {
         ctx.lineWidth = 1;
         ctx.strokeStyle = GRID_COLOR;
 
+        let origin = this._canvasToGrid(0, 0);
+        let topLine = Math.floor(origin.y / CELL_SIZE) * CELL_SIZE;
+        let leftLine = Math.floor(origin.x / CELL_SIZE) * CELL_SIZE;
+
         // Draw the vertical gridlines.
-        for (let i = 0; i <= ctx.canvas.width; i += CELL_SIZE) {
+        for (let i = leftLine; i <= origin.x + ctx.canvas.width; i += CELL_SIZE) {
             ctx.beginPath();
-            ctx.moveTo(i - 0.5, -0.5);
-            ctx.lineTo(i - 0.5, ctx.canvas.height + 0.5);
+            ctx.moveTo(i - 0.5, topLine - 0.5);
+            ctx.lineTo(i - 0.5, topLine + ctx.canvas.height + CELL_SIZE + 0.5);
             ctx.stroke();
         }
 
         // Draw the horizontal gridlines.
-        for (let j = 0; j <= ctx.canvas.height; j += CELL_SIZE) {
+        for (let j = topLine; j <= origin.y + ctx.canvas.height; j += CELL_SIZE) {
             ctx.beginPath();
-            ctx.moveTo(-0.5, j - 0.5);
-            ctx.lineTo(ctx.canvas.width * CELL_SIZE + 0.5, j - 0.5);
+            ctx.moveTo(leftLine - 0.5, j - 0.5);
+            ctx.lineTo(leftLine + ctx.canvas.width + CELL_SIZE + 0.5, j - 0.5);
             ctx.stroke();
         }
     }
@@ -98,5 +118,17 @@ class Grid {
         for (let cell of this._board) {
             ctx.fillRect(cell.column * CELL_SIZE - 1, cell.row * CELL_SIZE - 1, CELL_SIZE + 1, CELL_SIZE + 1);
         }
+    }
+
+    /**
+     * Converts a point relative to the canvas's top-left corner to point
+     * relative to the grid's origin.
+     *
+     * @param {number} x - An x coordinate in canvas coordinates.
+     * @param {number} y - A y coordinate in canvas coordinates.
+     * @return {Point} The corresponding point in grid coordinates.
+     */
+    _canvasToGrid(x, y) {
+        return new Point(x - this._translation.x, y - this._translation.y);
     }
 }
