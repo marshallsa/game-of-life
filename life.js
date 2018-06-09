@@ -13,6 +13,19 @@ class Life {
         this._board = new Board();
         this._grid = new Grid(this._board, canvas);
         this._ticker = 0;
+
+        // Resize the canvas to fill the whole window.
+        this._grid.resize(window.innerWidth, window.innerHeight);
+        window.addEventListener("resize", () => {
+            this._grid.resize(window.innerWidth, window.innerHeight);
+        });
+
+        // Toggle a cell when it's clicked.
+        canvas.addEventListener("click", (event) => {
+            let cell = this._grid.get(event.clientX, event.clientY);
+            this._board.toggle(cell.row, cell.column);
+            this._grid.draw();
+        });
     }
 
     /**
@@ -49,6 +62,8 @@ class Life {
 
 window.addEventListener("load", function() {
     let life = new Life(document.getElementById("canvas"));
+
+    // Play/pause the game by pressing the space bar.
     document.addEventListener("keydown", (event) => {
         if (event.key == " ") {
             if (life.playing) {

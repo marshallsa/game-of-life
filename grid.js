@@ -28,10 +28,31 @@ class Grid {
         this._board = board;
         this._canvas = canvas;
         this._ctx = canvas.getContext("2d");
+    }
 
-        this._resize();
-        window.addEventListener("resize", () => this._resize());
-        canvas.addEventListener("click", (event) => this._click(event));
+    /**
+     * Resizes the canvas.
+     *
+     * @param {number} width - The new width of the canvas.
+     * @param {number} height - The new height of the canvas.
+     */
+    resize(width, height) {
+        this._canvas.width = width;
+        this._canvas.height = height;
+        this.draw();
+    }
+
+    /**
+     * Returns the cell at the given x and y coordinates in the grid.
+     *
+     * @param {number} x - An x coordinate in the grid.
+     * @param {number} y - A y coordinate in the grid.
+     * @return {Cell} The cell at the given x and y coordinates.
+     */
+    get(x, y) {
+        let row = Math.floor(y / CELL_SIZE);
+        let column = Math.floor(x / CELL_SIZE);
+        return this._board.get(row, column);
     }
 
     /**
@@ -77,26 +98,5 @@ class Grid {
         for (let cell of this._board) {
             ctx.fillRect(cell.column * CELL_SIZE - 1, cell.row * CELL_SIZE - 1, CELL_SIZE + 1, CELL_SIZE + 1);
         }
-    }
-
-    /**
-     * Resizes the canvas to fit the window size.
-     */
-    _resize() {
-        this._canvas.width = window.innerWidth;
-        this._canvas.height = window.innerHeight;
-        this.draw();
-    }
-
-    /**
-     * Toggles the cell that was clicked.
-     *
-     * @param {MouseEvent} event - The click event.
-     */
-    _click(event) {
-        let row = Math.floor(event.clientY / CELL_SIZE);
-        let column = Math.floor(event.clientX / CELL_SIZE);
-        this._board.toggle(row, column);
-        this.draw();
     }
 }
