@@ -48,6 +48,9 @@ class Life {
      */
     play() {
         if (this._ticker == 0) {
+            this._board.step();
+            this._grid.draw();
+
             this._ticker = window.setInterval(() => {
                 this._board.step();
                 this._grid.draw();
@@ -82,14 +85,20 @@ let life = null;
 window.addEventListener("load", function() {
     life = new Life(document.getElementById("canvas"));
 
+    // Play/pause the game by clicking the button.
+    let playButton = document.getElementById("play");
+    playButton.addEventListener("change", () => {
+        if (playButton.checked) {
+            life.play();
+        } else {
+            life.pause();
+        }
+    });
+
     // Play/pause the game by pressing the space bar.
     document.addEventListener("keydown", (event) => {
-        if (event.key == " ") {
-            if (life.playing) {
-                life.pause();
-            } else {
-                life.play();
-            }
+        if (event.key == " " && event.target != playButton) {
+            playButton.click();
         }
     });
 });
