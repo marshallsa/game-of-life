@@ -14,7 +14,14 @@
 </head>
 <body>
     <div id="toolbar">
-        <label><input id="play" type="checkbox" autocomplete="off">Play</label>
+        <span class="item"
+            ><input id="play" type="checkbox" autocomplete="off"
+            ><label for="play">Play</label
+        ></span
+        ><span class="item"
+            ><input id="zoom" type="range" autocomplete="off"
+            ><label id="zoom-label" for="zoom"></label
+        ></span>
     </div>
 
     <canvas id="canvas"></canvas>

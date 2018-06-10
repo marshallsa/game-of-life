@@ -1,18 +1,25 @@
 "use strict";
 
 /**
- * The width and height of each cell in pixels.
- *
- * @type {number}
- */
-const CELL_SIZE = 15;
-
-/**
  * The color of the gridlines.
  *
  * @type {string}
  */
 const GRID_COLOR = "#eee";
+
+/**
+ * The smallest allowed width and height of a cell in pixels.
+ *
+ * @type {number}
+ */
+const MIN_CELL_SIZE = 1;
+
+/**
+ * The largest allowed width and height of a cell in pixels.
+ *
+ * @type {number}
+ */
+const MAX_CELL_SIZE = 100;
 
 /**
  * Shows cells from a Game of Life in a grid on a canvas.
@@ -29,6 +36,7 @@ class Grid {
         this._canvas = canvas;
         this._ctx = canvas.getContext("2d");
         this._translation = new Point(0, 0);
+        this._cellSize = 15;
     }
 
     /**
@@ -57,6 +65,41 @@ class Grid {
     }
 
     /**
+     * Returns the width and height of each cell in pixels.
+     *
+     * @return {number} The width and height of each cell in pixels.
+     */
+    get cellSize() {
+        return this._cellSize;
+    }
+
+    /**
+     * Zooms the grid to the given cell size, keeping the given point on the
+     * canvas centered. If no center point is given, the center of the canvas is
+     * used by default.
+     *
+     * @param {number} cellSize The new cell size.
+     * @param {number} [centerX] The x coordinate to keep centered, or the
+     *     horizontal midline of the canvas if not given.
+     * @param {number} [centerY] The y coordinate to keep centered, or the
+     *     vertical midline of the canvas if not given.
+     */
+    zoom(cellSize, centerX, centerY) {
+        cellSize = Math.max(MIN_CELL_SIZE, Math.min(cellSize, MAX_CELL_SIZE));
+        if (centerX === undefined)
+            centerX = this._ctx.canvas.width / 2;
+        if (centerY === undefined)
+            centerY = this._ctx.canvas.height / 2;
+
+        let gridCenter = this._canvasToGrid(centerX, centerY);
+        let dx = gridCenter.x / this._cellSize * (cellSize - this._cellSize);
+        let dy = gridCenter.y / this._cellSize * (cellSize - this._cellSize);
+
+        this._cellSize = cellSize;
+        this.translate(Math.round(-dx), Math.round(-dy));
+    }
+
+    /**
      * Returns the cell at the given x and y coordinates on the canvas.
      *
      * @param {number} x - An x coordinate in the grid.
@@ -65,8 +108,8 @@ class Grid {
      */
     get(x, y) {
         let gridPoint = this._canvasToGrid(x, y);
-        let row = Math.floor(gridPoint.y / CELL_SIZE);
-        let column = Math.floor(gridPoint.x / CELL_SIZE);
+        let row = Math.floor(gridPoint.y / this.cellSize);
+        let column = Math.floor(gridPoint.x / this.cellSize);
         return this._board.get(row, column);
     }
 
@@ -78,7 +121,9 @@ class Grid {
         let origin = this._canvasToGrid(0, 0);
         ctx.clearRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
         this._drawCells();
-        this._drawGridlines();
+        if (this.cellSize > 5) {
+            this._drawGridlines();
+        }
     }
 
     /**
@@ -90,22 +135,22 @@ class Grid {
         ctx.strokeStyle = GRID_COLOR;
 
         let origin = this._canvasToGrid(0, 0);
-        let topLine = Math.floor(origin.y / CELL_SIZE) * CELL_SIZE;
-        let leftLine = Math.floor(origin.x / CELL_SIZE) * CELL_SIZE;
+        let topLine = Math.floor(origin.y / this.cellSize) * this.cellSize;
+        let leftLine = Math.floor(origin.x / this.cellSize) * this.cellSize;
 
         // Draw the vertical gridlines.
-        for (let i = leftLine; i <= origin.x + ctx.canvas.width; i += CELL_SIZE) {
+        for (let i = leftLine; i <= origin.x + ctx.canvas.width; i += this.cellSize) {
             ctx.beginPath();
             ctx.moveTo(i - 0.5, topLine - 0.5);
-            ctx.lineTo(i - 0.5, topLine + ctx.canvas.height + CELL_SIZE + 0.5);
+            ctx.lineTo(i - 0.5, topLine + ctx.canvas.height + this.cellSize + 0.5);
             ctx.stroke();
         }
 
         // Draw the horizontal gridlines.
-        for (let j = topLine; j <= origin.y + ctx.canvas.height; j += CELL_SIZE) {
+        for (let j = topLine; j <= origin.y + ctx.canvas.height; j += this.cellSize) {
             ctx.beginPath();
             ctx.moveTo(leftLine - 0.5, j - 0.5);
-            ctx.lineTo(leftLine + ctx.canvas.width + CELL_SIZE + 0.5, j - 0.5);
+            ctx.lineTo(leftLine + ctx.canvas.width + this.cellSize + 0.5, j - 0.5);
             ctx.stroke();
         }
     }
@@ -116,7 +161,7 @@ class Grid {
     _drawCells() {
         let ctx = this._ctx;
         for (let cell of this._board) {
-            ctx.fillRect(cell.column * CELL_SIZE - 1, cell.row * CELL_SIZE - 1, CELL_SIZE + 1, CELL_SIZE + 1);
+            ctx.fillRect(cell.column * this.cellSize, cell.row * this.cellSize, this.cellSize, this.cellSize);
         }
     }
 

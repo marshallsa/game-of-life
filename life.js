@@ -7,16 +7,33 @@ class Life {
     /**
      * Creates a new Game of Life.
      *
-     * @param {HTMLCanvasElement} canvas - The canvas to show the game on.
+     * @param {Board} board - The game board.
+     * @param {Grid} grid - The grid displaying the given board.
      */
-    constructor(canvas) {
-        this._board = new Board();
-        this._grid = new Grid(this._board, canvas);
-        this._ticker = 0;
+    constructor(board, grid) {
+        this._board = board;
+        this._grid = grid;
+        this._tickerId = 0;
+    }
 
+    /**
+     * Adds event listeners for all of the game controls.
+     */
+    addEventListeners() {
         // Resize the canvas to fit the window.
         this._grid.resize(window.innerWidth, window.innerHeight);
         window.addEventListener("resize", () => this._grid.resize(window.innerWidth, window.innerHeight));
+
+        this._addMouseListeners();
+        this._addToolbarListeners();
+        this._addKeyListeners();
+    }
+
+    /**
+     * Adds event listeners for the mouse controls.
+     */
+    _addMouseListeners() {
+        let canvas = document.getElementById("canvas");
 
         // Prepare to click or pan when the left mouse button is pressed.
         canvas.addEventListener("mousedown", (event) => {
@@ -41,40 +58,102 @@ class Life {
                 this._grid.draw();
             }
         });
+
+        // Zoom the grid using the mouse wheel.
+        canvas.addEventListener("wheel", (event) => {
+            let cellSize = this._grid.cellSize - Math.round(event.deltaY);
+            this._zoom(cellSize, event.clientX, event.clientY);
+        });
     }
 
     /**
-     * Plays the Game of Life if it's paused.
+     * Adds event listeners for the toolbar controls.
      */
-    play() {
-        if (this._ticker == 0) {
-            this._board.step();
-            this._grid.draw();
+    _addToolbarListeners() {
+        // Play/pause the game by clicking the button.
+        document.getElementById("play").addEventListener("change", (event) => {
+            if (event.target.checked) {
+                this._play();
+            } else {
+                this._pause();
+            }
+        });
 
-            this._ticker = window.setInterval(() => {
+        // Zoom the grid using the slider.
+        let zoom = document.getElementById("zoom");
+        zoom.min = MIN_CELL_SIZE;
+        zoom.value = this._grid.cellSize;
+        zoom.max = MAX_CELL_SIZE;
+        let zoomLabel = document.getElementById("zoom-label");
+        zoom.addEventListener("input", (event) => this._zoom(event.target.value));
+        zoom.dispatchEvent(new Event("input"));
+    }
+
+    /**
+     * Adds event listeners for the keyboard controls.
+     */
+    _addKeyListeners() {
+        // Play/pause the game by pressing the space bar.
+        let playButton = document.getElementById("play");
+        document.addEventListener("keyup", (event) => {
+            if (event.key == " " && event.target.tagName != "INPUT") {
+                if (this._playing) {
+                    this._pause();
+                } else {
+                    this._play();
+                }
+            }
+        });
+    }
+
+    /**
+     * Plays the game if it's paused.
+     */
+    _play() {
+        if (!this._playing) {
+            document.getElementById("play").checked = true;
+            let tick = () => {
                 this._board.step();
                 this._grid.draw();
-            }, 500);
+            };
+            this._tickerId = window.setInterval(tick, 500);
+            tick();
         }
     }
 
     /**
-     * Pauses the Game of Life if it's playing.
+     * Pauses the game if it's playing.
      */
-    pause() {
-        if (this._ticker != 0) {
-            window.clearInterval(this._ticker);
-            this._ticker = 0;
+    _pause() {
+        if (this._playing) {
+            document.getElementById("play").checked = false;
+            window.clearInterval(this._tickerId);
+            this._tickerId = 0;
         }
     }
 
     /**
-     * Returns whether the Game of Life is playing or not.
+     * Returns true if the game is playing, otherwise false.
      *
      * @return {boolean} True if the game is playing, otherwise false.
      */
-    get playing() {
-        return this._ticker != 0;
+    get _playing() {
+        return this._tickerId != 0;
+    }
+
+    /**
+     * Zooms the grid to the given cell size.
+     *
+     * @param {number} cellSize The new cell size.
+     * @param {number} [centerX] The x coordinate to keep centered, if any.
+     * @param {number} [centerY] The y coordinate to keep centered, if any.
+     */
+    _zoom(cellSize, centerX, centerY) {
+        let slider = document.getElementById("zoom");
+        slider.value = cellSize;
+        document.getElementById("zoom-label").textContent =
+            Math.round(slider.value / MAX_CELL_SIZE * 100) + "%";
+        this._grid.zoom(slider.value, centerX, centerY);
     }
 }
 
@@ -82,23 +161,9 @@ class Life {
 // JavaScript console.
 let life = null;
 
-window.addEventListener("load", function() {
-    life = new Life(document.getElementById("canvas"));
-
-    // Play/pause the game by clicking the button.
-    let playButton = document.getElementById("play");
-    playButton.addEventListener("change", () => {
-        if (playButton.checked) {
-            life.play();
-        } else {
-            life.pause();
-        }
-    });
-
-    // Play/pause the game by pressing the space bar.
-    document.addEventListener("keydown", (event) => {
-        if (event.key == " " && event.target != playButton) {
-            playButton.click();
-        }
-    });
+window.addEventListener("load", () => {
+    let board = new Board();
+    let grid = new Grid(board, document.getElementById("canvas"));
+    life = new Life(board, grid);
+    life.addEventListeners();
 });
