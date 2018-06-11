@@ -1,0 +1,15 @@
+body {
+    margin: 0;
+    font-family: "Arial";
+}
+
+noscript {
+    position: absolute;
+    top: 50%;
+    line-height: 50px;
+    margin-top: -25px;
+
+    width: 100%;
+    text-align: center;
+    font-size: 16pt;
+}
