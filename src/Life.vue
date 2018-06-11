@@ -5,14 +5,15 @@
             ><label><input type="checkbox" v-model="playing">Play</label
         ></span
         ><span class="item"
-            ><input id="zoom" type="range" :value="cellSize" @input="zoom"
+            ><input id="zoom" type="range" @input="zoom"
+                :min="CELL_SIZE_MIN" :max="CELL_SIZE_MAX" :value="cellSize"
             ><label for="zoom">{{ cellSize }}%</label
         ></span>
     </div>
 
-    <canvas ref="canvas"
+    <canvas ref="canvas" @wheel="zoom"
         @mousedown.left="beginDrag" @mousemove="drag" @mouseup.left="endDrag"
-        @wheel="zoom"></canvas>
+    ></canvas>
 </div>
 </template>
 
@@ -49,7 +50,7 @@ canvas {
 
 <script>
 import Board from "./board.js";
-import Grid, {MIN_CELL_SIZE, MAX_CELL_SIZE} from "./grid.js";
+import Grid, {CELL_SIZE_MIN, CELL_SIZE_MAX} from "./grid.js";
 import DragMotion from "./dragmotion.js";
 
 import Vue from "vue";
@@ -61,6 +62,10 @@ export default class Life extends Vue {
     _tickId = 0;
 
     created() {
+        // Add constants.
+        this.CELL_SIZE_MIN = CELL_SIZE_MIN;
+        this.CELL_SIZE_MAX = CELL_SIZE_MAX;
+
         // Add non-reactive data.
         this._board = new Board();
         this._grid = null;

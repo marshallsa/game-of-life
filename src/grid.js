@@ -8,18 +8,18 @@ import Point from "./point.js";
 const GRID_COLOR = "#eee";
 
 /**
- * The smallest allowed width and height of a cell in pixels.
+ * The minimum width and height of a cell in pixels.
  *
  * @type {number}
  */
-export const MIN_CELL_SIZE = 1;
+export const CELL_SIZE_MIN = 1;
 
 /**
- * The largest allowed width and height of a cell in pixels.
+ * The maximum width and height of a cell in pixels.
  *
  * @type {number}
  */
-export const MAX_CELL_SIZE = 100;
+export const CELL_SIZE_MAX = 100;
 
 /**
  * Shows cells from a Game of Life in a grid on a canvas.
@@ -85,7 +85,7 @@ export default class Grid {
      *     vertical midline of the canvas if not given.
      */
     zoom(cellSize, centerX, centerY) {
-        cellSize = Math.max(MIN_CELL_SIZE, Math.min(cellSize, MAX_CELL_SIZE));
+        cellSize = Math.max(CELL_SIZE_MIN, Math.min(cellSize, CELL_SIZE_MAX));
         if (centerX === undefined)
             centerX = this._ctx.canvas.width / 2;
         if (centerY === undefined)
