@@ -1,9 +1,7 @@
-"use strict";
-
 /**
  * A 2-dimensional point.
  */
-class Point {
+export default class Point {
     /**
      * Creates a new point.
      *

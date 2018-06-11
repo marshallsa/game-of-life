@@ -1,9 +1,9 @@
-"use strict";
+import Cell from "./cell.js";
 
 /**
  * A board containing all of the cells for a Game of Life.
  */
-class Board {
+export default class Board {
     /**
      * Creates a new board.
      */

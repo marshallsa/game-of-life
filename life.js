@@ -1,4 +1,6 @@
-"use strict";
+import Board from "./board.js";
+import Grid, {MIN_CELL_SIZE, MAX_CELL_SIZE} from "./grid.js";
+import DragMotion from "./dragmotion.js";
 
 /**
  * The Game of Life.
@@ -157,13 +159,13 @@ class Life {
     }
 }
 
-// Let the Game of Life be in the global scope so it can be accessed from the
-// JavaScript console.
-let life = null;
-
 window.addEventListener("load", () => {
     let board = new Board();
     let grid = new Grid(board, document.getElementById("canvas"));
-    life = new Life(board, grid);
+    let life = new Life(board, grid);
     life.addEventListeners();
+
+    // Define the Game of Life in the global scope so it can be accessed from
+    // the JavaScript console.
+    window.life = life;
 });

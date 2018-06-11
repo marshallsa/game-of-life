@@ -1,4 +1,4 @@
-"use strict";
+import Point from "./point.js";
 
 /**
  * The distance in pixels that the mouse needs to move after being clicked to
@@ -12,7 +12,7 @@ const DRAG_THRESHOLD = 5;
  * A dragging motion that starts where the mouse is clicked and ends at the
  * mouse's current position.
  */
-class DragMotion {
+export default class DragMotion {
     /**
      * Creates a new dragging motion that starts at the given point.
      *

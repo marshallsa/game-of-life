@@ -1,4 +1,4 @@
-"use strict";
+import Point from "./point.js";
 
 /**
  * The color of the gridlines.
@@ -12,19 +12,19 @@ const GRID_COLOR = "#eee";
  *
  * @type {number}
  */
-const MIN_CELL_SIZE = 1;
+export const MIN_CELL_SIZE = 1;
 
 /**
  * The largest allowed width and height of a cell in pixels.
  *
  * @type {number}
  */
-const MAX_CELL_SIZE = 100;
+export const MAX_CELL_SIZE = 100;
 
 /**
  * Shows cells from a Game of Life in a grid on a canvas.
  */
-class Grid {
+export default class Grid {
     /**
      * Creates a new grid.
      *

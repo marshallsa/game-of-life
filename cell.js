@@ -1,9 +1,7 @@
-"use strict";
-
 /**
  * A single cell in the Game of Life.
  */
-class Cell {
+export default class Cell {
     /**
      * Creates a new cell.
      *
