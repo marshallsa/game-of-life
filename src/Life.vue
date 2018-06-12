@@ -122,13 +122,13 @@ export default class Life extends Vue {
                 this._board.step();
                 this._grid.draw();
                 if (this.playing) {
-                    this.$data._tickId = window.setTimeout(tick, 1000 / this.frequency);
+                    this._tickId = window.setTimeout(tick, 1000 / this.frequency);
                 }
             };
             tick();
         } else if (!playing && this.playing) {
             this.$data._playing = false;
-            window.clearTimeout(this.$data._tickId);
+            window.clearTimeout(this._tickId);
         }
     }
 
