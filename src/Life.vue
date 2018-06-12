@@ -2,7 +2,7 @@
 <div tabindex="-1" @keyup.space="playing = !playing">
     <div id="toolbar">
         <span class="item"
-            ><label for="speed">{{ frequency }} Hz</label
+            ><label for="speed">{{ frequency }}×</label
             ><input id="speed" type="range" v-model="frequency"
                 :min="FREQUENCY_MIN" :max="FREQUENCY_MAX" step="1"
         ></span
@@ -12,7 +12,7 @@
         ><span class="item"
             ><input id="zoom" type="range" @input="zoom" :value="cellSize"
                 :min="CELL_SIZE_MIN" :max="CELL_SIZE_MAX" step="1"
-            ><label for="zoom">{{ cellSize }} px</label
+            ><label for="zoom">{{ cellSize }}:1</label
         ></span>
     </div>
 
@@ -28,7 +28,7 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 5px;
+    padding: 10px;
 
     text-align: center;
 
@@ -44,8 +44,11 @@
 }
 label {
     display: inline-block;
-    min-width: 50px;
+    min-width: 40px;
     text-align: right;
+}
+label[for="speed"] {
+    margin-right: 10px;
 }
 
 canvas {

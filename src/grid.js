@@ -121,7 +121,7 @@ export default class Grid {
         let origin = this._canvasToGrid(0, 0);
         ctx.clearRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
         this._drawCells();
-        if (this.cellSize > 5) {
+        if (this.cellSize >= 10) {
             this._drawGridlines();
         }
     }
