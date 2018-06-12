@@ -2,12 +2,17 @@
 <div tabindex="-1" @keyup.space="playing = !playing">
     <div id="toolbar">
         <span class="item"
+            ><label for="speed">{{ frequency }} Hz</label
+            ><input id="speed" type="range" v-model="frequency"
+                :min="FREQUENCY_MIN" :max="FREQUENCY_MAX" step="1"
+        ></span
+        ><span class="item"
             ><label><input type="checkbox" v-model="playing">Play</label
         ></span
         ><span class="item"
-            ><input id="zoom" type="range" @input="zoom"
-                :min="CELL_SIZE_MIN" :max="CELL_SIZE_MAX" :value="cellSize"
-            ><label for="zoom">{{ cellSize }}%</label
+            ><input id="zoom" type="range" @input="zoom" :value="cellSize"
+                :min="CELL_SIZE_MIN" :max="CELL_SIZE_MAX" step="1"
+            ><label for="zoom">{{ cellSize }} px</label
         ></span>
     </div>
 
@@ -33,14 +38,14 @@
 #toolbar .item {
     margin: 0 20px;
 }
-#zoom {
+#toolbar input[type="range"] {
     width: 100px;
     margin-bottom: -5px;
-    margin-right: 0;
 }
-label[for="zoom"] {
+label {
     display: inline-block;
     min-width: 50px;
+    text-align: right;
 }
 
 canvas {
@@ -59,17 +64,21 @@ import Component from "vue-class-component";
 @Component
 export default class Life extends Vue {
     _cellSize = null;
-    _tickId = 0;
+    _frequency = 5;
+    _playing = false;
 
     created() {
         // Add constants.
         this.CELL_SIZE_MIN = CELL_SIZE_MIN;
         this.CELL_SIZE_MAX = CELL_SIZE_MAX;
+        this.FREQUENCY_MIN = 1;
+        this.FREQUENCY_MAX = 30;
 
         // Add non-reactive data.
         this._board = new Board();
         this._grid = null;
         this._drag = null;
+        this._tickId = 0;
     }
 
     mounted() {
@@ -94,7 +103,7 @@ export default class Life extends Vue {
      * @return {boolean} True if the game is playing, otherwise false.
      */
     get playing() {
-        return this.$data._tickId != 0;
+        return this.$data._playing;
     }
 
     /**
@@ -105,16 +114,38 @@ export default class Life extends Vue {
      */
     set playing(playing) {
         if (playing && !this.playing) {
+            this.$data._playing = true;
             let tick = () => {
                 this._board.step();
                 this._grid.draw();
+                if (this.playing) {
+                    this.$data._tickId = window.setTimeout(tick, 1000 / this.frequency);
+                }
             };
-            this.$data._tickId = window.setInterval(tick, 500);
             tick();
         } else if (!playing && this.playing) {
-            window.clearInterval(this.$data._tickId);
-            this.$data._tickId = 0;
+            this.$data._playing = false;
+            window.clearTimeout(this.$data._tickId);
         }
+    }
+
+    /**
+     * Returns the frequency of the game tick in Hertz.
+     *
+     * @return {number} The frequency of the game tick in Hertz.
+     */
+    get frequency() {
+        return this.$data._frequency;
+    }
+
+    /**
+     * Sets the frequency of the game tick in Hertz. The frequency is clamped
+     * between FREQUENCY_MIN and FREQUENCY_MAX.
+     *
+     * @param {number} frequency - The frequency of the game tick in Hertz.
+     */
+    set frequency(frequency) {
+        this.$data._frequency = Math.max(this.FREQUENCY_MIN, Math.min(frequency, this.FREQUENCY_MAX));
     }
 
     /**
