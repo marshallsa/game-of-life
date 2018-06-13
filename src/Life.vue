@@ -58,7 +58,7 @@ canvas {
 
 <script>
 import Board from "./board.js";
-import Grid, {CELL_SIZE_MIN, CELL_SIZE_MAX} from "./grid.js";
+import Grid from "./grid.js";
 import DragMotion from "./dragmotion.js";
 
 import Vue from "vue";
@@ -72,8 +72,8 @@ export default class Life extends Vue {
 
     created() {
         // Add constants.
-        this.CELL_SIZE_MIN = CELL_SIZE_MIN;
-        this.CELL_SIZE_MAX = CELL_SIZE_MAX;
+        this.CELL_SIZE_MIN = 1;
+        this.CELL_SIZE_MAX = 100;
         this.FREQUENCY_MIN = 1;
         this.FREQUENCY_MAX = 30;
 
@@ -152,18 +152,28 @@ export default class Life extends Vue {
     }
 
     /**
-     * Zooms the grid to the given cell size.
+     * Zooms the grid to the given cell size. The cell size is clamped between
+     * CELL_SIZE_MIN and CELL_SIZE_MAX.
      *
      * @param {InputEvent|WheelEvent} event - The event that triggered the
      *     zoom.
+     * @throws {Error} If the event is not an input or wheel event.
      */
     zoom(event) {
+        let cellSize, centerX, centerY;
         if (event.type == "input") {
-            this._grid.zoom(event.target.value);
+            cellSize = event.target.valueAsNumber;
         } else if (event.type == "wheel") {
-            this._grid.zoom(this._grid.cellSize - Math.round(event.deltaY), event.clientX, event.clientY);
+            cellSize = this._grid.cellSize - Math.round(event.deltaY);
+            centerX = event.clientX;
+            centerY = event.clientY;
+        } else {
+            throw new Error("Invalid event type");
         }
-        this.$data._cellSize = this._grid.cellSize;
+
+        cellSize = Math.max(this.CELL_SIZE_MIN, Math.min(cellSize, this.CELL_SIZE_MAX));
+        this._grid.zoom(cellSize, centerX, centerY);
+        this.$data._cellSize = cellSize;
     }
 
     /**
