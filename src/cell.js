@@ -16,27 +16,27 @@ export default class Cell {
     }
 
     /**
-     * Returns this cell's row number.
+     * This cell's row number.
      *
-     * @return {number} This cell's row number.
+     * @type {number}
      */
     get row() {
         return this._row;
     }
 
     /**
-     * Returns this cell's column number.
+     * This cell's column number.
      *
-     * @return {number} This cell's column number.
+     * @type {number}
      */
     get column() {
         return this._column;
     }
 
     /**
-     * Returns whether this cell is alive or not.
+     * True if this cell is alive, false otherwise.
      *
-     * @return {boolean} True if this cell is alive, otherwise false.
+     * @type {boolean}
      */
     get alive() {
         return this._alive;

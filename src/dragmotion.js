@@ -32,7 +32,7 @@ export default class DragMotion {
      *
      * @param {number} x - The current x coordinate of the mouse.
      * @param {number} y - The current y coordinate of the mouse.
-     * @return {Array<number>} The delta [dx, dy] from the last mouse position.
+     * @return {number[]} The delta [dx, dy] from the last mouse position.
      */
     update(x, y) {
         if (!this._dragging) {
@@ -51,11 +51,9 @@ export default class DragMotion {
     }
 
     /**
-     * Returns true if the mouse has moved past the drag threshold yet,
-     * otherwise false.
+     * True if the mouse has moved past the drag threshold yet, false otherwise.
      *
-     * @return {boolean} True if the mouse has moved past the drag threshold
-     *     yet, otherwise false.
+     * @type {boolean}
      */
     get moved() {
         return this._dragging && !this._start.equals(this._last);

@@ -66,10 +66,10 @@ export default class Grid {
     }
 
     /**
-     * Returns the width and height of each cell in pixels. Use the {@link zoom}
-     * method to change the cell size.
+     * The width and height of each cell in pixels. Use the {@link zoom} method
+     * to change the cell size.
      *
-     * @return {number} The width and height of each cell in pixels.
+     * @type {number}
      */
     get cellSize() {
         return this._cellSize;
@@ -104,22 +104,21 @@ export default class Grid {
     }
 
     /**
-     * Returns the current ghost pattern, or null if there is none.
+     * The current ghost pattern, or null if there is none. The ghost pattern is
+     * a static, non-interacting pattern that appears on top of normal cells in
+     * a lighter color. It can be used to show how a new pattern will look
+     * before being placed on the board.
      *
-     * @return {?Pattern} The current ghost pattern, or null if there is none.
+     * @type {?Pattern}
      */
     get ghost() {
         return this._ghost;
     }
 
     /**
-     * Sets the current ghost pattern. The ghost pattern is a static,
-     * non-interacting pattern that appears on top of normal cells in a lighter
-     * color. It can be used to show how a new pattern will look before it's
-     * placed on the board.
+     * Updates the current ghost pattern.
      *
-     * @param {?Pattern} ghost - The new ghost pattern, or null to clear the
-     *     ghost pattern.
+     * @type {?Pattern}
      */
     set ghost(ghost) {
         this._ghost = ghost;

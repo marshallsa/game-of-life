@@ -40,7 +40,7 @@ export default class Pattern {
     /**
      * Returns an iterator for the pattern's live cells.
      *
-     * @return {Iterator.<Cell>} An iterator for the pattern's live cells.
+     * @return {Iterator<Cell>} An iterator for the pattern's live cells.
      */
     [Symbol.iterator]() {
         return this._liveCells.values();
@@ -48,8 +48,8 @@ export default class Pattern {
 
     /**
      * Creates a pattern from the given plaintext-formatted string. See
-     * [LifeWiki]{@link http://conwaylife.com/wiki/Plaintext} for more
-     * information about the plaintext format.
+     * [LifeWiki](http://conwaylife.com/wiki/Plaintext) for more information
+     * about the plaintext format.
      *
      * @param {string} plaintext - The plaintext pattern string.
      * @return {Pattern} A pattern created from the given string.

@@ -8,6 +8,11 @@ export default class Board {
      * Creates a new board.
      */
     constructor() {
+        /**
+         * Maps stringified row-column pairs to cells.
+         *
+         * @type {Map<String, Cell>}
+         */
         this._liveCells = new Map();
     }
 
@@ -83,7 +88,7 @@ export default class Board {
     /**
      * Returns an iterator for the board's live cells.
      *
-     * @return {Iterator} An iterator for the board's live cells.
+     * @return {Iterator<Cell>} An iterator for the board's live cells.
      */
     [Symbol.iterator]() {
         return this._liveCells.values();
@@ -93,7 +98,7 @@ export default class Board {
      * Returns the neighbors of the given cell.
      *
      * @param {Cell} cell - The cell whose neighbors will be returned.
-     * @return {Array<Cell>} The given cell's neighbors.
+     * @return {Cell[]} The given cell's neighbors.
      */
     _neighbors(cell) {
         let neighbors = [];

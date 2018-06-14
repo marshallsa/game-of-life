@@ -99,18 +99,52 @@ import Pattern, {PATTERNS} from "./pattern.js";
 import Vue from "vue";
 import Component from "vue-class-component";
 
+/**
+ * The Game of Life.
+ */
 @Component
 export default class Life extends Vue {
     _cellSize = null;
     _frequency = 5;
     _playing = false;
 
+    /**
+     * @override
+     */
     created() {
-        // Add constants.
+        /**
+         * The smallest cell size allowed when zooming.
+         *
+         * @type {number}
+         */
         this.CELL_SIZE_MIN = 1;
+
+        /**
+         * The largest cell size allowed when zooming.
+         *
+         * @type {number}
+         */
         this.CELL_SIZE_MAX = 100;
+
+        /**
+         * The slowest game frequency allowed.
+         *
+         * @type {number}
+         */
         this.FREQUENCY_MIN = 1;
+
+        /**
+         * The fastest game frequency allowed.
+         *
+         * @type {number}
+         */
         this.FREQUENCY_MAX = 30;
+
+        /**
+         * A list of common Game of Life patterns.
+         *
+         * @type {NamedPattern[]}
+         */
         this.PATTERNS = PATTERNS;
 
         // Add non-reactive data.
@@ -120,6 +154,9 @@ export default class Life extends Vue {
         this._tickId = 0;
     }
 
+    /**
+     * @override
+     */
     mounted() {
         this._grid = new Grid(this._board, this.$refs.canvas);
         this.$data._cellSize = this._grid.cellSize;
@@ -128,28 +165,29 @@ export default class Life extends Vue {
     }
 
     /**
-     * Returns the current cell size.
+     * The current cell size. Use the {@link zoom} method to change the cell
+     * size. The cell size is clamped between {@link CELL_SIZE_MIN} and
+     * {@link CELL_SIZE_MAX}.
      *
-     * @return {number} The current cell size.
+     * @type {number}
      */
     get cellSize() {
         return this.$data._cellSize;
     }
 
     /**
-     * Returns true if the game is playing, otherwise false.
+     * True if the game is playing or false if the game is paused.
      *
-     * @return {boolean} True if the game is playing, otherwise false.
+     * @type {boolean}
      */
     get playing() {
         return this.$data._playing;
     }
 
     /**
-     * Sets whether the game is playing or paused.
+     * Controls whether the game is playing or paused.
      *
-     * @param {boolean} playing - True to start playing the game or
-     *     false to pause the game.
+     * @type {boolean}
      */
     set playing(playing) {
         if (playing && !this.playing) {
@@ -169,19 +207,19 @@ export default class Life extends Vue {
     }
 
     /**
-     * Returns the frequency of the game tick in Hertz.
+     * The frequency of the game tick in Hertz. The frequency is clamped between
+     * {@link FREQUENCY_MIN} and {@link FREQUENCY_MAX}.
      *
-     * @return {number} The frequency of the game tick in Hertz.
+     * @type {number}
      */
     get frequency() {
         return this.$data._frequency;
     }
 
     /**
-     * Sets the frequency of the game tick in Hertz. The frequency is clamped
-     * between FREQUENCY_MIN and FREQUENCY_MAX.
+     * Updates the frequency of the game tick.
      *
-     * @param {number} frequency - The frequency of the game tick in Hertz.
+     * @type {number}
      */
     set frequency(frequency) {
         this.$data._frequency = Math.max(this.FREQUENCY_MIN, Math.min(frequency, this.FREQUENCY_MAX));

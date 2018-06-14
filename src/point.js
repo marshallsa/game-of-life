@@ -14,26 +14,26 @@ export default class Point {
     }
 
     /**
-     * Returns the x coordinate of the point.
+     * The x coordinate of the point.
      *
-     * @return {number} The x coordinate of the point.
+     * @type {number}
      */
     get x() {
         return this._x;
     }
 
     /**
-     * Returns the y coordinate of the point.
+     * The y coordinate of the point.
      *
-     * @return {number} The y coordinate of the point.
+     * @type {number}
      */
     get y() {
         return this._y;
     }
 
     /**
-     * Translates this point by x units horizontally and y units vertically and
-     * returns the new point.
+     * Returns a copy of this point translateed by x units horizontally and y
+     * units vertically.
      *
      * @param {number} x - The number of units to translate horizontally.
      * @param {number} y - The number of units to translate vertically.
@@ -54,7 +54,7 @@ export default class Point {
     }
 
     /**
-     * Returns true if this point is equal to the given point, otherwise false.
+     * Returns true if this point is equal to the given point, false otherwise.
      *
      * @param {Point} point - The point to check equality with.
      * @return {boolean} True if this point is equal to the given point,
