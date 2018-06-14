@@ -1,6 +1,20 @@
 import Point from "./point.js";
 
 /**
+ * The color of live cells.
+ *
+ * @type {string}
+ */
+const CELL_COLOR = "#000";
+
+/**
+ * The color of the ghost pattern's cells.
+ *
+ * @type {string}
+ */
+const GHOST_COLOR = "#aaa";
+
+/**
  * The color of the gridlines.
  *
  * @type {string}
@@ -23,6 +37,7 @@ export default class Grid {
         this._ctx = canvas.getContext("2d");
         this._translation = new Point(0, 0);
         this._cellSize = 15;
+        this._ghost = null;
     }
 
     /**
@@ -51,7 +66,8 @@ export default class Grid {
     }
 
     /**
-     * Returns the width and height of each cell in pixels.
+     * Returns the width and height of each cell in pixels. Use the {@link zoom}
+     * method to change the cell size.
      *
      * @return {number} The width and height of each cell in pixels.
      */
@@ -88,6 +104,29 @@ export default class Grid {
     }
 
     /**
+     * Returns the current ghost pattern, or null if there is none.
+     *
+     * @return {?Pattern} The current ghost pattern, or null if there is none.
+     */
+    get ghost() {
+        return this._ghost;
+    }
+
+    /**
+     * Sets the current ghost pattern. The ghost pattern is a static,
+     * non-interacting pattern that appears on top of normal cells in a lighter
+     * color. It can be used to show how a new pattern will look before it's
+     * placed on the board.
+     *
+     * @param {?Pattern} ghost - The new ghost pattern, or null to clear the
+     *     ghost pattern.
+     */
+    set ghost(ghost) {
+        this._ghost = ghost;
+        this.draw();
+    }
+
+    /**
      * Returns the cell at the given x and y coordinates on the canvas.
      *
      * @param {number} x - An x coordinate in the grid.
@@ -108,7 +147,11 @@ export default class Grid {
         let ctx = this._ctx;
         let origin = this._canvasToGrid(0, 0);
         ctx.clearRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
-        this._drawCells();
+
+        this._drawCells(this._board, CELL_COLOR);
+        if (this._ghost != null) {
+            this._drawCells(this._ghost, GHOST_COLOR);
+        }
         if (this.cellSize >= 10) {
             this._drawGridlines();
         }
@@ -144,11 +187,15 @@ export default class Grid {
     }
 
     /**
-     * Draws the live cells.
+     * Draws the given cells.
+     *
+     * @param {Iterable.<Cell>} cells - The cells to draw.
+     * @param {string} color - The color of the cells.
      */
-    _drawCells() {
+    _drawCells(cells, color) {
         let ctx = this._ctx;
-        for (let cell of this._board) {
+        ctx.fillStyle = color;
+        for (let cell of cells) {
             ctx.fillRect(cell.column * this.cellSize, cell.row * this.cellSize, this.cellSize, this.cellSize);
         }
     }

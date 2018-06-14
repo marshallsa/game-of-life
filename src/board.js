@@ -28,6 +28,19 @@ export default class Board {
     }
 
     /**
+     * Adds the given pattern to the board.
+     *
+     * @param {Pattern} pattern - The pattern to add to the board.
+     */
+    add(pattern) {
+        for (let cell of pattern) {
+            if (cell.alive) {
+                this._liveCells.set(Board._toMapKey(cell), cell);
+            }
+        }
+    }
+
+    /**
      * Returns the cell at the given row and column.
      *
      * @param {number} row - The row number of the cell.

@@ -16,9 +16,17 @@
         ></span>
     </div>
 
-    <canvas ref="canvas" @wheel="zoom"
-        @mousedown.left="beginDrag" @mousemove="drag" @mouseup.left="endDrag"
-    ></canvas>
+    <div id="sidebar">
+        <ul id="patterns">
+            <li v-for="pattern in PATTERNS">
+                <a v-text="pattern.name"
+                    @click.prevent="selectPattern(pattern.pattern)"></a>
+            </li>
+        </ul>
+    </div>
+
+    <canvas ref="canvas" @wheel="zoom" @mousedown="onMouseDown"
+        @mousemove="onMouseMove" @mouseup="onMouseUp"></canvas>
 </div>
 </template>
 
@@ -28,9 +36,11 @@
     top: 0;
     left: 0;
     right: 0;
-    padding: 10px;
 
-    text-align: center;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     background: #fff;
     border-bottom: #eee 1px solid;
@@ -51,6 +61,30 @@ label[for="speed"] {
     margin-right: 10px;
 }
 
+#sidebar {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    width: 175px;
+
+    background: #fff;
+    border-right: #eee 1px solid;
+}
+#patterns {
+    list-style-type: none;
+    padding: 0 8px;
+    margin: 0;
+}
+#patterns a {
+    display: block;
+    padding: 5px 5px;
+    cursor: pointer;
+}
+#patterns a:hover {
+    background: #eee;
+}
+
 canvas {
     display: block;
 }
@@ -58,8 +92,9 @@ canvas {
 
 <script>
 import Board from "./board.js";
-import Grid from "./grid.js";
 import DragMotion from "./dragmotion.js";
+import Grid from "./grid.js";
+import Pattern, {PATTERNS} from "./pattern.js";
 
 import Vue from "vue";
 import Component from "vue-class-component";
@@ -76,6 +111,7 @@ export default class Life extends Vue {
         this.CELL_SIZE_MAX = 100;
         this.FREQUENCY_MIN = 1;
         this.FREQUENCY_MAX = 30;
+        this.PATTERNS = PATTERNS;
 
         // Add non-reactive data.
         this._board = new Board();
@@ -157,7 +193,7 @@ export default class Life extends Vue {
      *
      * @param {InputEvent|WheelEvent} event - The event that triggered the
      *     zoom.
-     * @throws {Error} If the event is not an input or wheel event.
+     * @throws {TypeError} If the event is not an input or wheel event.
      */
     zoom(event) {
         let cellSize, centerX, centerY;
@@ -168,7 +204,7 @@ export default class Life extends Vue {
             centerX = event.clientX;
             centerY = event.clientY;
         } else {
-            throw new Error("Invalid event type");
+            throw new TypeError("Invalid event type");
         }
 
         cellSize = Math.max(this.CELL_SIZE_MIN, Math.min(cellSize, this.CELL_SIZE_MAX));
@@ -177,39 +213,66 @@ export default class Life extends Vue {
     }
 
     /**
-     * Marks the start of the mouse being dragged.
+     * Handles mousedown events on the canvas.
      *
-     * @param {MouseEvent} event - The event that started the drag.
+     * @param {MouseEvent} event - The mousedown event.
      */
-    beginDrag(event) {
-        this._drag = new DragMotion(event.clientX, event.clientY);
+    onMouseDown(event) {
+        // Prepare to drag if the left mouse button is pressed.
+        if (event.button == 0) {
+            this._drag = new DragMotion(event.clientX, event.clientY);
+        }
     }
 
     /**
-     * Pans the grid when the mouse is dragged.
+     * Handles mousemove events on the canvas.
      *
-     * @param {MouseEvent} event - The drag event.
+     * @param {MouseEvent} event - The mousemove event.
      */
-    drag(event) {
+    onMouseMove(event) {
+        // Pan the grid if the mouse is dragged.
         if (event.buttons & 1) {
             let [dx, dy] = this._drag.update(event.clientX, event.clientY);
             this._grid.translate(dx, dy);
         }
+
+        // Keep the selected pattern under the mouse pointer.
+        if (this._grid.ghost != null) {
+            let cell = this._grid.get(event.clientX, event.clientY);
+            this._grid.ghost = this._grid.ghost.center(cell.row, cell.column);
+        }
     }
 
     /**
-     * Marks the end of the mouse being dragged. Toggles a cell if the mouse
-     * didn't move during the drag (i.e., the drag was actually a click).
+     * Handles mouseup events on the canvas.
      *
-     * @param {MouseEvent} event - The event that ended the drag.
+     * @param {MouseEvent} event - The mouseup event.
      */
-    endDrag(event) {
-        if (!this._drag.moved) {
-            let cell = this._grid.get(event.clientX, event.clientY);
-            this._board.toggle(cell.row, cell.column);
-            this._grid.draw();
+    onMouseUp(event) {
+        // Check if this was a click instead of a drag.
+        if (event.button == 0 && !this._drag.moved) {
+            if (this._grid.ghost == null) {
+                // Toggle the clicked cell.
+                let cell = this._grid.get(event.clientX, event.clientY);
+                this._board.toggle(cell.row, cell.column);
+                this._grid.draw();
+            } else {
+                // Place the selected pattern on the board.
+                this._board.add(this._grid.ghost);
+                this._grid.ghost = null;
+            }
         }
         this._drag = null;
+    }
+
+    /**
+     * Selects the pattern so it can be placed on the board.
+     *
+     * @param {Pattern} pattern - The pattern to select.
+     */
+    selectPattern(pattern) {
+        let cell = this._grid.get(this.$refs.canvas.width / 2, this.$refs.canvas.height / 2);
+        this._grid.ghost = pattern.center(cell.row, cell.column);
     }
 }
 </script>
