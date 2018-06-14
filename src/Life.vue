@@ -233,7 +233,10 @@ export default class Life extends Vue {
         // Pan the grid if the mouse is dragged.
         if (event.buttons & 1) {
             let [dx, dy] = this._drag.update(event.clientX, event.clientY);
-            this._grid.translate(dx, dy);
+            if (dx != 0 || dy != 0) {
+                this.$refs.canvas.style.cursor = "pointer";
+                this._grid.translate(dx, dy);
+            }
         }
 
         // Keep the selected pattern under the mouse pointer.
@@ -262,6 +265,8 @@ export default class Life extends Vue {
                 this._grid.ghost = null;
             }
         }
+
+        this.$refs.canvas.style.cursor = "default";
         this._drag = null;
     }
 
