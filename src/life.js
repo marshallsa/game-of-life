@@ -4,6 +4,8 @@ import Grid from "./grid.js";
 import {PATTERNS} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
 
+import autobind from "autobind-decorator";
+
 import React from "react";
 
 /**
@@ -97,15 +99,6 @@ export default class Life extends React.Component {
      */
     constructor(props) {
         super(props);
-
-        // Bind event handlers.
-        this._playPause = this._playPause.bind(this);
-        this._changeFrequency = this._changeFrequency.bind(this);
-        this._zoom = this._zoom.bind(this);
-        this._mouseDown = this._mouseDown.bind(this);
-        this._mouseMove = this._mouseMove.bind(this);
-        this._mouseUp = this._mouseUp.bind(this);
-        this._changePattern = this._changePattern.bind(this);
     }
 
     /** @override */
@@ -123,6 +116,7 @@ export default class Life extends React.Component {
      * @param {ChangeEvent|KeyboardEvent} event - The event that triggered the
      *     play or pause.
      */
+    @autobind
     _playPause(event) {
         let playing;
         if (event.type == "change" && event.target.type == "checkbox") {
@@ -155,6 +149,7 @@ export default class Life extends React.Component {
      * @param {ChangeEvent} event - The event that triggered the frequency
      *     change.
      */
+    @autobind
     _changeFrequency(event) {
         let frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
         this.setState({frequency});
@@ -167,6 +162,7 @@ export default class Life extends React.Component {
      * @param {ChangeEvent|WheelEvent} event - The event that triggered the
      *     zoom.
      */
+    @autobind
     _zoom(event) {
         let cellSize, centerX, centerY;
         if (event.type == "change") {
@@ -189,6 +185,7 @@ export default class Life extends React.Component {
      *
      * @param {MouseEvent} event - The mousedown event.
      */
+    @autobind
     _mouseDown(event) {
         // Prepare to drag if the left mouse button is pressed.
         if (event.button == 0) {
@@ -201,6 +198,7 @@ export default class Life extends React.Component {
      *
      * @param {MouseEvent} event - The mousemove event.
      */
+    @autobind
     _mouseMove(event) {
         // Pan the grid if the mouse is dragged.
         if (event.buttons & 1) {
@@ -223,6 +221,7 @@ export default class Life extends React.Component {
      *
      * @param {MouseEvent} event - The mouseup event.
      */
+    @autobind
     _mouseUp(event) {
         // Check if this was a click instead of a drag.
         if (event.button == 0 && !this._drag.moved) {
@@ -248,6 +247,7 @@ export default class Life extends React.Component {
      * @param {?Pattern} pattern - The new selected pattern, or null to clear
      *     the selected pattern.
      */
+    @autobind
     _changePattern(pattern) {
         if (pattern != null) {
             let cell = this._grid.get(this._canvas.width / 2, this._canvas.height / 2);
