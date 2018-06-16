@@ -17,12 +17,8 @@
     </div>
 
     <div id="sidebar">
-        <ul id="patterns">
-            <li v-for="pattern in PATTERNS">
-                <a v-text="pattern.name"
-                    @click.prevent="selectPattern(pattern.pattern)"></a>
-            </li>
-        </ul>
+        <PatternPicker :patterns="PATTERNS" v-model="patternIndex"
+        ></PatternPicker>
     </div>
 
     <canvas ref="canvas" @wheel="zoom" @mousedown="onMouseDown"
@@ -71,19 +67,6 @@ label[for="speed"] {
     background: #fff;
     border-right: #eee 1px solid;
 }
-#patterns {
-    list-style-type: none;
-    padding: 0 8px;
-    margin: 0;
-}
-#patterns a {
-    display: block;
-    padding: 5px 5px;
-    cursor: pointer;
-}
-#patterns a:hover {
-    background: #eee;
-}
 
 canvas {
     display: block;
@@ -95,6 +78,7 @@ import Board from "./board.js";
 import DragMotion from "./dragmotion.js";
 import Grid from "./grid.js";
 import Pattern, {PATTERNS} from "./pattern.js";
+import PatternPicker from "./PatternPicker.vue";
 
 import Vue from "vue";
 import Component from "vue-class-component";
@@ -102,11 +86,16 @@ import Component from "vue-class-component";
 /**
  * The Game of Life.
  */
-@Component
+@Component({
+    components: {
+        "PatternPicker": PatternPicker
+    }
+})
 export default class Life extends Vue {
     _cellSize = null;
     _frequency = 5;
     _playing = false;
+    _patternIndex = -1;
 
     /**
      * @override
@@ -143,7 +132,7 @@ export default class Life extends Vue {
         /**
          * A list of common Game of Life patterns.
          *
-         * @type {NamedPattern[]}
+         * @type {Pattern[]}
          */
         this.PATTERNS = PATTERNS;
 
@@ -226,6 +215,32 @@ export default class Life extends Vue {
     }
 
     /**
+     * The index of the selected pattern in {@link PATTERNS}, or -1 if no
+     * pattern is selected.
+     *
+     * @type {number}
+     */
+    get patternIndex() {
+        return this.$data._patternIndex;
+    }
+
+    /**
+     * Updates the index of the selected pattern.
+     *
+     * @type {number}
+     */
+    set patternIndex(patternIndex) {
+        if (patternIndex != -1) {
+            let cell = this._grid.get(this.$refs.canvas.width / 2, this.$refs.canvas.height / 2);
+            let pattern = this.PATTERNS[patternIndex].center(cell.row, cell.column);
+            this._grid.ghost = pattern;
+        } else {
+            this._grid.ghost = null;
+        }
+        this.$data._patternIndex = patternIndex;
+    }
+
+    /**
      * Zooms the grid to the given cell size. The cell size is clamped between
      * CELL_SIZE_MIN and CELL_SIZE_MAX.
      *
@@ -300,22 +315,12 @@ export default class Life extends Vue {
             } else {
                 // Place the selected pattern on the board.
                 this._board.add(this._grid.ghost);
-                this._grid.ghost = null;
+                this.patternIndex = -1;
             }
         }
 
         this.$refs.canvas.style.cursor = "default";
         this._drag = null;
-    }
-
-    /**
-     * Selects the pattern so it can be placed on the board.
-     *
-     * @param {Pattern} pattern - The pattern to select.
-     */
-    selectPattern(pattern) {
-        let cell = this._grid.get(this.$refs.canvas.width / 2, this.$refs.canvas.height / 2);
-        this._grid.ghost = pattern.center(cell.row, cell.column);
     }
 }
 </script>

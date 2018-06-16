@@ -5,12 +5,23 @@ import Cell from "./cell.js";
  */
 export default class Pattern {
     /**
-     * Creates a new pattern from the given cells.
+     * Creates a new pattern.
      *
+     * @param {string} name - The name of the pattern.
      * @param {Cell[]} cells - The cells that make up the pattern.
      */
-    constructor(cells) {
+    constructor(name, cells) {
+        this._name = name;
         this._liveCells = cells.filter(cell => cell.alive);
+    }
+
+    /**
+     * The name of this pattern.
+     *
+     * @type {string}
+     */
+    get name() {
+        return this._name;
     }
 
     /**
@@ -34,11 +45,11 @@ export default class Pattern {
         for (let cell of this._liveCells) {
             newCells.push(new Cell(cell.row + rowDiff, cell.column + columnDiff, cell.alive));
         }
-        return new Pattern(newCells);
+        return new Pattern(name, newCells);
     }
 
     /**
-     * Returns an iterator for the pattern's live cells.
+     * Returns an iterator for this pattern's live cells.
      *
      * @return {Iterator<Cell>} An iterator for the pattern's live cells.
      */
@@ -53,15 +64,26 @@ export default class Pattern {
      *
      * @param {string} plaintext - The plaintext pattern string.
      * @return {Pattern} A pattern created from the given string.
+     * @throws {Error} If the string could not be parsed.
      */
     static fromPlaintext(plaintext) {
+        // Extract the pattern name.
+        let lines = plaintext.split("\n");
+        if (lines.length == 0 || !lines[0].startsWith("!Name:")) {
+            throw new Error("Expected \"!Name:\" header");
+        }
+        let name = lines[0].substring("!Name:".length).trim();
+
+        // Skip the comment lines.
+        let index = 0;
+        while (index < lines.length && lines[index][0] == "!") {
+            index++;
+        }
+
+        // Extract the pattern cells.
         let liveCells = [];
         let row = 0;
-        for (let line of plaintext.split("\n")) {
-            if (line[0] == "!") {
-                continue;
-            }
-
+        for (let line of lines.slice(index)) {
             let column = 0;
             for (let character of line) {
                 if (character == "O") {
@@ -74,114 +96,82 @@ export default class Pattern {
             }
             row++;
         }
-        return new Pattern(liveCells);
+        return new Pattern(name, liveCells);
     }
 }
 
 /**
- * @typedef NamedPattern
- * @type {object}
- * @property {string} name - The name of the pattern.
- * @property {Pattern} pattern - The pattern.
- */
-
-/**
  * A list of common Game of Life patterns.
  *
- * @type {NamedPattern[]}
+ * @type {Pattern[]}
  */
 export const PATTERNS = [
-    {
-        name: "Blinker",
-        pattern: Pattern.fromPlaintext(
-            "OOO")
-    },
-    {
-        name: "Toad",
-        pattern: Pattern.fromPlaintext(
-            ".OOO\n" +
-            "OOO.")
-    },
-    {
-        name: "Beacon",
-        pattern: Pattern.fromPlaintext(
-            "OO..\n" +
-            "OO..\n" +
-            "..OO\n" +
-            "..OO")
-    },
-    {
-        name: "Pulsar",
-        pattern: Pattern.fromPlaintext(
-            "..OO.....OO..\n" +
-            "...OO...OO...\n" +
-            "O..O.O.O.O..O\n" +
-            "OOO.OO.OO.OOO\n" +
-            ".O.O.O.O.O.O.\n" +
-            "..OOO...OOO..\n" +
-            ".............\n" +
-            "..OOO...OOO..\n" +
-            ".O.O.O.O.O.O.\n" +
-            "OOO.OO.OO.OOO\n" +
-            "O..O.O.O.O..O\n" +
-            "...OO...OO...\n" +
-            "..OO.....OO..")
-    },
-    {
-        name: "Pentadecathlon",
-        pattern: Pattern.fromPlaintext(
-            "..O....O..\n" +
-            "OO.OOOO.OO\n" +
-            "..O....O..")
-    },
-    {
-        name: "Glider",
-        pattern: Pattern.fromPlaintext(
-            ".O.\n" +
-            "..O\n" +
-            "OOO")
-    },
-    {
-        name: "Lightweight Spaceship",
-        pattern: Pattern.fromPlaintext(
-            "O..O.\n" +
-            "....O\n" +
-            "O...O\n" +
-            ".OOOO")
-    },
-    {
-        name: "Block",
-        pattern: Pattern.fromPlaintext(
-            "OO\n" +
-            "OO")
-    },
-    {
-        name: "Beehive",
-        pattern: Pattern.fromPlaintext(
-            ".OO.\n" +
-            "O..O\n" +
-            ".OO.\n")
-    },
-    {
-        name: "Loaf",
-        pattern: Pattern.fromPlaintext(
-            ".OO.\n" +
-            "O..O\n" +
-            ".O.O\n" +
-            "..O.")
-    },
-    {
-        name: "Boat",
-        pattern: Pattern.fromPlaintext(
-            "OO.\n" +
-            "O.O\n" +
-            ".O.")
-    },
-    {
-        name: "Tub",
-        pattern: Pattern.fromPlaintext(
-            ".O.\n" +
-            "O.O\n" +
-            ".O.")
-    }
-];
+    "!Name: Blinker\n" +
+    "OOO",
+
+    "!Name: Toad\n" +
+    ".OOO\n" +
+    "OOO.",
+
+    "!Name: Beacon\n" +
+    "OO..\n" +
+    "OO..\n" +
+    "..OO\n" +
+    "..OO",
+
+    "!Name: Pulsar\n" +
+    "..OO.....OO..\n" +
+    "...OO...OO...\n" +
+    "O..O.O.O.O..O\n" +
+    "OOO.OO.OO.OOO\n" +
+    ".O.O.O.O.O.O.\n" +
+    "..OOO...OOO..\n" +
+    ".............\n" +
+    "..OOO...OOO..\n" +
+    ".O.O.O.O.O.O.\n" +
+    "OOO.OO.OO.OOO\n" +
+    "O..O.O.O.O..O\n" +
+    "...OO...OO...\n" +
+    "..OO.....OO..",
+
+    "!Name: Pentadecathlon\n" +
+    "..O....O..\n" +
+    "OO.OOOO.OO\n" +
+    "..O....O..",
+
+    "!Name: Glider\n" +
+    ".O.\n" +
+    "..O\n" +
+    "OOO",
+
+    "!Name: Lightweight Spaceship\n" +
+    "O..O.\n" +
+    "....O\n" +
+    "O...O\n" +
+    ".OOOO",
+
+    "!Name: Block\n" +
+    "OO\n" +
+    "OO",
+
+    "!Name: Beehive\n" +
+    ".OO.\n" +
+    "O..O\n" +
+    ".OO.\n",
+
+    "!Name: Loaf\n" +
+    ".OO.\n" +
+    "O..O\n" +
+    ".O.O\n" +
+    "..O.",
+
+    "!Name: Boat\n" +
+    "OO.\n" +
+    "O.O\n" +
+    ".O.",
+
+    "!Name: Tub\n" +
+    ".O.\n" +
+    "O.O\n" +
+    ".O."
+].map(plaintext => Pattern.fromPlaintext(plaintext));
