@@ -4,14 +4,15 @@
         <span class="item"
             ><label for="speed">{{ frequency }}×</label
             ><input id="speed" type="range" v-model="frequency"
-                :min="FREQUENCY_MIN" :max="FREQUENCY_MAX" step="1"
+                :min="$options.frequencyMin" :max="$options.frequencyMax"
+                step="1"
         ></span
         ><span class="item"
             ><label><input type="checkbox" v-model="playing">Play</label
         ></span
         ><span class="item"
             ><input id="zoom" type="range" @input="zoom" :value="cellSize"
-                :min="CELL_SIZE_MIN" :max="CELL_SIZE_MAX" step="1"
+                :min="$options.cellSizeMin" :max="$options.cellSizeMax" step="1"
             ><label for="zoom">{{ cellSize }}:1</label
         ></span>
     </div>
@@ -87,6 +88,10 @@ import Component from "vue-class-component";
  * The Game of Life.
  */
 @Component({
+    cellSizeMin: 1,
+    cellSizeMax: 100,
+    frequencyMin: 1,
+    frequencyMax: 30,
     components: {
         "PatternPicker": PatternPicker
     }
@@ -101,33 +106,7 @@ export default class Life extends Vue {
      * @override
      */
     created() {
-        /**
-         * The smallest cell size allowed when zooming.
-         *
-         * @type {number}
-         */
-        this.CELL_SIZE_MIN = 1;
-
-        /**
-         * The largest cell size allowed when zooming.
-         *
-         * @type {number}
-         */
-        this.CELL_SIZE_MAX = 100;
-
-        /**
-         * The slowest game frequency allowed.
-         *
-         * @type {number}
-         */
-        this.FREQUENCY_MIN = 1;
-
-        /**
-         * The fastest game frequency allowed.
-         *
-         * @type {number}
-         */
-        this.FREQUENCY_MAX = 30;
+        // Add non-reactive data.
 
         /**
          * A list of common Game of Life patterns.
@@ -136,7 +115,6 @@ export default class Life extends Vue {
          */
         this.PATTERNS = PATTERNS;
 
-        // Add non-reactive data.
         this._board = new Board();
         this._grid = null;
         this._drag = null;
@@ -155,8 +133,7 @@ export default class Life extends Vue {
 
     /**
      * The current cell size. Use the {@link zoom} method to change the cell
-     * size. The cell size is clamped between {@link CELL_SIZE_MIN} and
-     * {@link CELL_SIZE_MAX}.
+     * size. The cell size is clamped between `cellSizeMin` and `cellSizeMax`.
      *
      * @type {number}
      */
@@ -197,7 +174,7 @@ export default class Life extends Vue {
 
     /**
      * The frequency of the game tick in Hertz. The frequency is clamped between
-     * {@link FREQUENCY_MIN} and {@link FREQUENCY_MAX}.
+     * `frequencyMin` and `frequencyMax`.
      *
      * @type {number}
      */
@@ -211,7 +188,7 @@ export default class Life extends Vue {
      * @type {number}
      */
     set frequency(frequency) {
-        this.$data._frequency = Math.max(this.FREQUENCY_MIN, Math.min(frequency, this.FREQUENCY_MAX));
+        this.$data._frequency = Math.max(this.$options.frequencyMin, Math.min(frequency, this.$options.frequencyMax));
     }
 
     /**
@@ -260,7 +237,7 @@ export default class Life extends Vue {
             throw new TypeError("Invalid event type");
         }
 
-        cellSize = Math.max(this.CELL_SIZE_MIN, Math.min(cellSize, this.CELL_SIZE_MAX));
+        cellSize = Math.max(this.$options.cellSizeMin, Math.min(cellSize, this.$options.cellSizeMax));
         this._grid.zoom(cellSize, centerX, centerY);
         this.$data._cellSize = cellSize;
     }
