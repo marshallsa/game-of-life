@@ -45,7 +45,7 @@ export default class Pattern {
         for (let cell of this._liveCells) {
             newCells.push(new Cell(cell.row + rowDiff, cell.column + columnDiff, cell.alive));
         }
-        return new Pattern(name, newCells);
+        return new Pattern(this.name, newCells);
     }
 
     /**

@@ -13,3 +13,64 @@ noscript {
     text-align: center;
     font-size: 16pt;
 }
+
+canvas {
+    display: block;
+}
+
+.toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #fff;
+    border-bottom: #eee 1px solid;
+}
+.toolbar .item {
+    margin: 0 20px;
+}
+.toolbar input[type="range"] {
+    width: 100px;
+    margin-bottom: -5px;
+}
+.toolbar label:first-child > span, .toolbar label:last-child > span {
+    display: inline-block;
+    min-width: 40px;
+    text-align: right;
+}
+.toolbar label:first-child > span {
+    margin-right: 10px;
+}
+
+.sidebar {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    bottom: 0;
+    width: 175px;
+
+    background: #fff;
+    border-right: #eee 1px solid;
+}
+.patterns {
+    list-style-type: none;
+    padding: 0 8px;
+    margin: 0;
+}
+.patterns a {
+    display: block;
+    padding: 5px 5px;
+    cursor: pointer;
+}
+.patterns a:hover {
+    background: #eee;
+}
+.patterns .selected {
+    font-weight: bold;
+}

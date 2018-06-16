@@ -1,11 +1,14 @@
 {
   "source": "./src",
   "destination": "./docs",
-  "includes": ["\\.(js|vue)$"],
   "plugins": [
     {
       "name": "esdoc-standard-plugin",
-      "option": {"accessor": {"access": ["public", "protected"]}}
+      "option": {
+        "accessor": {
+          "access": ["public", "protected"]
+        }
+      }
     },
     {
       "name": "esdoc-ecmascript-proposal-plugin",
@@ -15,7 +18,7 @@
       }
     },
     {
-      "name": "esdoc-vue-plugin"
+      "name": "esdoc-jsx-plugin"
     }
   ]
 }

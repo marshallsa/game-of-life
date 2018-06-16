@@ -1,7 +1,6 @@
-import Vue from "vue";
-import Life from "./Life.vue";
+import Life from "./life.js";
 
-window.life = new Vue({
-    el: "#life",
-    render: createElement => createElement(Life, {"ref": "life"})
-}).$refs.life;
+import React from "react";
+import ReactDOM from "react-dom";
+
+window.life = ReactDOM.render(<Life/>, document.getElementById("life"));
