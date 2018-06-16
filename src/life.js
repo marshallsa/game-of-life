@@ -92,15 +92,6 @@ export default class Life extends React.Component {
      */
     _tickId = 0;
 
-    /**
-     * Creates a new Game of Life.
-     *
-     * @param {Object} props - The component props.
-     */
-    constructor(props) {
-        super(props);
-    }
-
     /** @override */
     componentDidMount() {
         this._board = new Board();
