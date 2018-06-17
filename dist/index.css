@@ -53,24 +53,32 @@ canvas {
     top: 40px;
     left: 0;
     bottom: 0;
-    width: 175px;
+    width: 190px;
+    overflow-y: auto;
 
     background: #fff;
     border-right: #eee 1px solid;
 }
 .patterns {
     list-style-type: none;
-    padding: 0 8px;
+    padding: 0;
     margin: 0;
+    font-size: small;
 }
 .patterns a {
-    display: block;
-    padding: 5px 5px;
+    display: flex;
+    align-items: center;
+    padding: 5px 10px;
+
     cursor: pointer;
 }
 .patterns a:hover {
     background: #eee;
 }
-.patterns .selected {
-    font-weight: bold;
+.patterns .selected, .patterns .selected:hover {
+    background: #d1ebff;
+}
+.patterns canvas {
+    flex-shrink: 0;
+    margin-right: 10px;
 }

@@ -241,8 +241,10 @@ export default class Life extends React.Component {
     @autobind
     _changePattern(pattern) {
         if (pattern != null) {
-            let cell = this._grid.get(this._canvas.width / 2, this._canvas.height / 2);
-            pattern = pattern.center(cell.row, cell.column);
+            // Show the pattern off-screen until the user moves their mouse over
+            // the canvas.
+            let cell = this._grid.get(0, 0);
+            pattern = pattern.center(cell.row - pattern.height, cell.column - pattern.width);
         }
         this._grid.ghost = pattern;
         this.setState({pattern});

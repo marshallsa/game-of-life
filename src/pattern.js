@@ -25,6 +25,28 @@ export default class Pattern {
     }
 
     /**
+     * The width of this pattern. The width is the number of cells spanned from
+     * the leftmost live cell to the rightmost live cell.
+     *
+     * @type {number}
+     */
+    get width() {
+        let columns = this._liveCells.map(cell => cell.column);
+        return Math.max(...columns) - Math.min(...columns) + 1;
+    }
+
+    /**
+     * The height of this pattern. The height is the number of cells spanned
+     * from the topmost live cell to the bottommost live cell.
+     *
+     * @type {number}
+     */
+    get height() {
+        let rows = this._liveCells.map(cell => cell.row);
+        return Math.max(...rows) - Math.min(...rows) + 1;
+    }
+
+    /**
      * Returns a copy of this pattern centered at the given row and column.
      *
      * @param {number} row - The new row the pattern is centered on.

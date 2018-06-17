@@ -1,6 +1,13 @@
 import Point from "./point.js";
 
 /**
+ * The background color of the grid.
+ *
+ * @type {string}
+ */
+const BACKGROUND_COLOR = "#fff";
+
+/**
  * The color of live cells.
  *
  * @type {string}
@@ -145,7 +152,8 @@ export default class Grid {
     draw() {
         let ctx = this._ctx;
         let origin = this._canvasToGrid(0, 0);
-        ctx.clearRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
+        ctx.fillStyle = BACKGROUND_COLOR;
+        ctx.fillRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
 
         this._drawCells(this._board, CELL_COLOR);
         if (this._ghost != null) {

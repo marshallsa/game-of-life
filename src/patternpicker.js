@@ -1,3 +1,5 @@
+import PatternPreview from "./patternpreview.js";
+
 import React from "react";
 
 /**
@@ -36,7 +38,9 @@ export default class PatternPicker extends React.Component {
                     <li key={pattern.name}>
                         <a
                             className={this._selected(pattern) ? "selected" : ""}
-                            onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}>
+                            onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}
+                        >
+                            <PatternPreview width="50" height="50" pattern={pattern}/>
                             {pattern.name}
                         </a>
                     </li>
