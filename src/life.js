@@ -1,7 +1,7 @@
 import Board from "./board.js";
 import DragMotion from "./dragmotion.js";
 import Grid from "./grid.js";
-import {PATTERNS} from "./pattern.js";
+import {Rotation, PATTERNS} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
 
 import autobind from "autobind-decorator";
@@ -233,6 +233,24 @@ export default class Life extends React.Component {
     }
 
     /**
+     * Handles wheel events on the canvas.
+     *
+     * @param {WheelEvent} event - The wheel event.
+     */
+    @autobind
+    _wheel(event) {
+        if (this._grid.ghost == null) {
+            // Zoom the grid.
+            this._zoom(event);
+        } else {
+            // Rotate the selected pattern.
+            let direction = event.deltaY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE;
+            let pivot = this._grid.get(event.clientX, event.clientY);
+            this._grid.ghost = this._grid.ghost.rotate(direction, pivot.row, pivot.column);
+        }
+    }
+
+    /**
      * Changes or clears the selected pattern.
      *
      * @param {?Pattern} pattern - The new selected pattern, or null to clear
@@ -290,7 +308,7 @@ export default class Life extends React.Component {
 
                 <canvas
                     ref={canvas => this._canvas = canvas}
-                    onWheel={this._zoom}
+                    onWheel={this._wheel}
                     onMouseDown={this._mouseDown}
                     onMouseMove={this._mouseMove}
                     onMouseUp={this._mouseUp}/>

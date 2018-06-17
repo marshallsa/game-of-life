@@ -1,6 +1,18 @@
 import Cell from "./cell.js";
 
 /**
+ * An enum of rotational directions.
+ *
+ * @type {Object}
+ * @property {symbol} CLOCKWISE - Clockwise rotation.
+ * @property {symbol} COUNTERCLOCKWISE - Counterclockwise rotation.
+ */
+export const Rotation = Object.freeze({
+    CLOCKWISE: Symbol("CLOCKWISE"),
+    COUNTERCLOCKWISE: Symbol("COUNTERCLOCKWISE")
+});
+
+/**
  * A pattern is a collection of cells.
  */
 export default class Pattern {
@@ -55,19 +67,34 @@ export default class Pattern {
      *     column.
      */
     center(row, column) {
-        // Calculate the difference between the current center and the new
-        // center.
         let rows = this._liveCells.map(cell => cell.row);
+        let rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
         let columns = this._liveCells.map(cell => cell.column);
-        let rowDiff = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
-        let columnDiff = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
+        let columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
 
-        // Shift all the cells to match the new center.
-        let newCells = [];
-        for (let cell of this._liveCells) {
-            newCells.push(new Cell(cell.row + rowDiff, cell.column + columnDiff, cell.alive));
-        }
-        return new Pattern(this.name, newCells);
+        return new Pattern(this.name, this._liveCells.map(cell =>
+            new Cell(
+                cell.row + rowShift,
+                cell.column + columnShift,
+                cell.alive)));
+    }
+
+    /**
+     * Returns a copy of this pattern rotated about the given pivot cell.
+     *
+     * @param {Rotation} direction - The direction of rotation.
+     * @param {number} pivotRow - The row of the pivot cell.
+     * @param {number} pivotColumn - The column of the pivot cell.
+     * @return {Pattern} A copy of this pattern rotated about the given pivot
+     *     cell.
+     */
+    rotate(direction, pivotRow, pivotColumn) {
+        let sign = direction == Rotation.CLOCKWISE ? 1 : -1;
+        return new Pattern(this.name, this._liveCells.map(cell =>
+            new Cell(
+                pivotRow + sign * (cell.column - pivotColumn),
+                pivotColumn - sign * (cell.row - pivotRow),
+                cell.alive)));
     }
 
     /**
