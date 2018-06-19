@@ -4,51 +4,51 @@ import PatternPreview from "./patternpreview.js";
 import React from "react";
 
 /**
- * Lets the user pick a pattern from a list.
+ * Lets the user pick a pattern from a list of presets.
  */
 export default class PatternPicker extends React.Component {
   /**
    * Creates a new PatternPicker.
    *
    * @param {Object} props - The component props.
-   * @param {PatternProperties[]} props.patterns - The list of each pattern's properties.
-   * @param {?PatternProperties} props.pattern - The selected pattern's properties, or null if no
-   * pattern is selected.
-   * @param {function(pattern: PatternProperties)} props.onPatternChange - Called when the selected
-   * pattern changes.
+   * @param {PatternPreset[]} props.presets - The list of pattern presets.
+   * @param {?PatternPreset} props.selectedPreset - The selected pattern preset, or null if no
+   * preset is selected.
+   * @param {function(selectedPreset: PatternPreset)} props.onPresetChange - Called when the
+   * selected pattern preset changes.
    */
   constructor(props) {
     super(props);
   }
 
   /**
-   * Returns true if the given pattern is selected, false otherwise.
+   * Returns true if the given pattern preset is selected, false otherwise.
    *
-   * @param {PatternProperties} pattern - The pattern's properties.
-   * @return {boolean} True if the given pattern is selected, false otherwise.
+   * @param {PatternPreset} preset - The pattern preset.
+   * @return {boolean} True if the given pattern preset is selected, false otherwise.
    */
-  _selected(pattern) {
-    return this.props.pattern && this.props.pattern.name == pattern.name;
+  _selected(preset) {
+    return this.props.selectedPreset && this.props.selectedPreset.name == preset.name;
   }
 
   /** @override */
   render() {
     return (
       <ul className="patterns">
-        {this.props.patterns.map(pattern =>
+        {this.props.presets.map(preset =>
           <li
-            key={pattern.name}
-            className={this._selected(pattern) ? "selected" : ""}
-            onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}
+            key={preset.name}
+            className={this._selected(preset) ? "selected" : ""}
+            onClick={() => this.props.onPresetChange(this._selected(preset) ? null : preset)}
           >
-            <PatternPreview width="50" height="50" pattern={Pattern.fromRle(pattern.rle)}/>
-            <span class="name">{pattern.name}</span>
-            {pattern.author && <span class="author">{pattern.author}</span>}
-            <span class="description">
-              {pattern.description + " "}
-              {pattern.url &&
+            <PatternPreview width="50" height="50" pattern={Pattern.fromPreset(preset)}/>
+            <span className="name">{preset.name}</span>
+            {preset.author && <span className="author">{preset.author}</span>}
+            <span className="description">
+              {preset.description + " "}
+              {preset.url &&
                 <a
-                  href={pattern.url}
+                  href={preset.url}
                   target="_blank"
                   onClick={(event) => event.stopPropagation()}
                 >Read more</a>

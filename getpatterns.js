@@ -3,7 +3,7 @@ const http = require("http");
 
 const StreamZip = require("node-stream-zip");
 
-import {parseRleProperties} from "./src/pattern.js";
+import {readRlePattern} from "./src/pattern.js";
 
 /**
  * The name of the ZIP file to load patterns from.
@@ -104,7 +104,7 @@ updateFile(ZIP_FILE, "www.conwaylife.com", "/patterns/all.zip", () => {
     const patterns = [];
     for (let name of PATTERN_NAMES) {
       const buffer = zip.entryDataSync(zip.entry(name));
-      patterns.push(parseRleProperties(buffer.toString()));
+      patterns.push(readRlePattern(buffer.toString()));
     }
 
     fs.writeFileSync(JSON_FILE, JSON.stringify(patterns, null, 2));

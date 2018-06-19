@@ -102,15 +102,14 @@ export default class Pattern {
   }
 
   /**
-   * Creates a pattern from the given run-length encoded string.
+   * Creates a pattern from the given preset.
    *
-   * @param {string} rle - The run-length encoded pattern string.
-   * @return {Pattern} The pattern corresponding to the given string.
-   * @see http://conwaylife.com/wiki/Run_Length_Encoded
+   * @param {PatternPreset} preset - The pattern preset.
+   * @return {Pattern} The pattern corresponding to the given preset.
    */
-  static fromRle(rle) {
-    // Tokenize the pattern.
-    let lines = rle.split(/\r?\n/);
+  static fromPreset(preset) {
+    // Parse the preset's RLE string.
+    let lines = preset.rle.split(/\r?\n/);
     let tokens = dropWhile(lines, line => line.startsWith("#") || line.startsWith("x = "))
       .join("")
       .split(/([bo$!])/)
@@ -158,25 +157,25 @@ export default class Pattern {
 }
 
 /**
- * Additional properties for a pattern.
+ * A pattern preset has a pattern's serialized string as well as metadata for the pattern.
  *
- * @typedef {Object} PatternProperties
+ * @typedef {Object} PatternPreset
  * @property {string} name - The name of the pattern.
  * @property {string} author - The author of the pattern.
  * @property {string} description - A description of the pattern.
  * @property {string} url - The URL to the pattern's web page.
- * @property {string} rle - The run-length encoded pattern string, excluding the properties.
+ * @property {string} rle - The run-length encoded pattern string, excluding metadata.
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
 
 /**
- * Parses a run-length encoded pattern string and returns the pattern's properties.
+ * Reads a run-length encoded pattern string and returns the preset for the pattern.
  *
  * @param {string} rle - The run-length encoded pattern string.
- * @return {PatternProperties} The pattern's properties.
+ * @return {PatternPreset} The preset for the pattern.
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
-export function parseRleProperties(rle) {
+export function readRlePattern(rle) {
   // Convert the property lines into [letter, value] pairs.
   let lines = rle.split(/\r?\n/);
   let preamble = takeWhile(lines, line => line.startsWith("#"))

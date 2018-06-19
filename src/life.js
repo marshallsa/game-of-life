@@ -3,7 +3,7 @@ import DragMotion from "./dragmotion.js";
 import Grid from "./grid.js";
 import Pattern, {Rotation} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
-import patterns from "../patterns.json";
+import patternPresets from "../patterns.json";
 
 import autobind from "autobind-decorator";
 
@@ -50,10 +50,10 @@ export default class Life extends React.Component {
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
    * @property {boolean} playing - True if the game is playing, or false if the game is paused.
-   * @property {?PatternProperties} pattern - The properties of the selected pattern, or null if no
-   * pattern is selected.
+   * @property {?PatternPreset} patternPreset - The selected pattern preset, or null if no preset is
+   * selected.
    */
-  state = {cellSize: 15, frequency: 5, playing: false, pattern: null};
+  state = {cellSize: 15, frequency: 5, playing: false, patternPreset: null};
 
   /**
    * The game board that contains the cells.
@@ -248,23 +248,23 @@ export default class Life extends React.Component {
   }
 
   /**
-   * Changes or clears the selected pattern.
+   * Changes or clears the selected pattern preset.
    *
-   * @param {?PatternProperties} pattern - The properties of the new selected pattern, or null to
-   * clear the selected pattern.
+   * @param {?PatternPreset} preset - The new selected pattern preset, or null to clear the selected
+   * preset.
    */
   @autobind
-  _changePattern(pattern) {
-    if (pattern != null) {
+  _changePattern(preset) {
+    if (preset != null) {
       // Show the pattern off-screen until the user moves their mouse over the canvas.
       let cell = this._grid.get(0, 0);
-      let ghost = Pattern.fromRle(pattern.rle);
-      this._grid.ghost = ghost.center(cell.row - ghost.height, cell.column - ghost.width);
+      let pattern = Pattern.fromPreset(preset);
+      this._grid.ghost = pattern.center(cell.row - pattern.height, cell.column - pattern.width);
     } else {
       this._grid.ghost = null;
     }
 
-    this.setState({pattern});
+    this.setState({patternPreset: preset});
   }
 
   /** @override */
@@ -302,9 +302,9 @@ export default class Life extends React.Component {
 
         <div className="sidebar">
           <PatternPicker
-            patterns={patterns}
-            pattern={this.state.pattern}
-            onPatternChange={this._changePattern}
+            presets={patternPresets}
+            selectedPreset={this.state.patternPreset}
+            onPresetChange={this._changePattern}
           />
         </div>
 
