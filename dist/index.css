@@ -53,32 +53,48 @@ canvas {
   top: 40px;
   left: 0;
   bottom: 0;
-  width: 190px;
+  width: 220px;
   overflow-y: auto;
 
   background: #fff;
   border-right: #eee 1px solid;
 }
+
 .patterns {
   list-style-type: none;
   padding: 0;
   margin: 0;
   font-size: small;
 }
-.patterns a {
-  display: flex;
+.patterns li {
+  display: grid;
+  grid-template-columns: 50px 1fr;
+  grid-template-rows: 50px auto;
   align-items: center;
   padding: 5px 10px;
 
   cursor: pointer;
 }
-.patterns a:hover {
+.patterns li:hover {
   background: #eee;
 }
-.patterns .selected, .patterns .selected:hover {
+.patterns li.selected, .patterns li.selected:hover {
   background: #d1ebff;
 }
-.patterns canvas {
-  flex-shrink: 0;
-  margin-right: 10px;
+.patterns .name {
+  margin-left: 10px;
+}
+.patterns .author, .patterns .description {
+  grid-column: span 2;
+  margin-top: 5px;
+  display: none;
+}
+.patterns li.selected .author, .patterns li.selected .description {
+  display: inline;
+}
+.patterns .author {
+  color: #999;
+}
+.patterns .description {
+  text-align: justify;
 }

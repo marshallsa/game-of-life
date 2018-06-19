@@ -1,6 +1,7 @@
 import Cell from "./cell.js";
 
 import dropWhile from "lodash-es/dropWhile";
+import last from "lodash-es/last";
 import takeWhile from "lodash-es/takeWhile";
 
 /**
@@ -163,7 +164,8 @@ export default class Pattern {
  * @property {string} name - The name of the pattern.
  * @property {string} author - The author of the pattern.
  * @property {string} description - A description of the pattern.
- * @property {string} rle - The run-length encoded pattern string, excluding metadata.
+ * @property {string} url - The URL to the pattern's web page.
+ * @property {string} rle - The run-length encoded pattern string, excluding the properties.
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
 
@@ -184,19 +186,28 @@ export function parseRleProperties(rle) {
   let properties = {};
   for (let [letter, value] of preamble) {
     if (properties.hasOwnProperty(letter)) {
-      properties[letter] += " " + value;
+      properties[letter].push(value);
     } else {
-      properties[letter] = value;
+      properties[letter] = [value];
     }
+  }
+
+  // The last comment line may have a URL to the pattern's web page.
+  let url = "";
+  if (last(properties["C"]).startsWith("http:")) {
+    url = properties["C"].pop();
+  } else if (last(properties["C"]).startsWith("www.")) {
+    url = "http://" + properties["C"].pop();
   }
 
   // The remainder of the RLE string is the pattern itself.
   let pattern = lines.slice(preamble.length + 1).join("");
 
   return {
-    name: properties["N"],
-    author: properties["O"],
-    description: properties["C"],
+    name: (properties["N"] || []).join(""),
+    author: (properties["O"] || []).join(""),
+    description: (properties["C"] || []).join(""),
+    url: url,
     rle: pattern
   };
 }

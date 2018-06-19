@@ -36,14 +36,24 @@ export default class PatternPicker extends React.Component {
     return (
       <ul className="patterns">
         {this.props.patterns.map(pattern =>
-          <li key={pattern.name}>
-            <a
-              className={this._selected(pattern) ? "selected" : ""}
-              onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}
-            >
-              <PatternPreview width="50" height="50" pattern={Pattern.fromRle(pattern.rle)}/>
-              {pattern.name}
-            </a>
+          <li
+            key={pattern.name}
+            className={this._selected(pattern) ? "selected" : ""}
+            onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}
+          >
+            <PatternPreview width="50" height="50" pattern={Pattern.fromRle(pattern.rle)}/>
+            <span class="name">{pattern.name}</span>
+            {pattern.author && <span class="author">{pattern.author}</span>}
+            <span class="description">
+              {pattern.description + " "}
+              {pattern.url &&
+                <a
+                  href={pattern.url}
+                  target="_blank"
+                  onClick={(event) => event.stopPropagation()}
+                >Read more</a>
+              }
+            </span>
           </li>
         )}
       </ul>
