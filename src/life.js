@@ -1,8 +1,9 @@
 import Board from "./board.js";
 import DragMotion from "./dragmotion.js";
 import Grid from "./grid.js";
-import {Rotation, PATTERNS} from "./pattern.js";
+import Pattern, {Rotation} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
+import patterns from "../patterns.json";
 
 import autobind from "autobind-decorator";
 
@@ -49,7 +50,8 @@ export default class Life extends React.Component {
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
    * @property {boolean} playing - True if the game is playing, or false if the game is paused.
-   * @property {?Pattern} pattern - The selected pattern, or null if no pattern is selected.
+   * @property {?PatternProperties} pattern - The properties of the selected pattern, or null if no
+   * pattern is selected.
    */
   state = {cellSize: 15, frequency: 5, playing: false, pattern: null};
 
@@ -248,16 +250,20 @@ export default class Life extends React.Component {
   /**
    * Changes or clears the selected pattern.
    *
-   * @param {?Pattern} pattern - The new selected pattern, or null to clear the selected pattern.
+   * @param {?PatternProperties} pattern - The properties of the new selected pattern, or null to
+   * clear the selected pattern.
    */
   @autobind
   _changePattern(pattern) {
     if (pattern != null) {
       // Show the pattern off-screen until the user moves their mouse over the canvas.
       let cell = this._grid.get(0, 0);
-      pattern = pattern.center(cell.row - pattern.height, cell.column - pattern.width);
+      let ghost = Pattern.fromRle(pattern.rle);
+      this._grid.ghost = ghost.center(cell.row - ghost.height, cell.column - ghost.width);
+    } else {
+      this._grid.ghost = null;
     }
-    this._grid.ghost = pattern;
+
     this.setState({pattern});
   }
 
@@ -296,7 +302,7 @@ export default class Life extends React.Component {
 
         <div className="sidebar">
           <PatternPicker
-            patterns={PATTERNS}
+            patterns={patterns}
             pattern={this.state.pattern}
             onPatternChange={this._changePattern}
           />

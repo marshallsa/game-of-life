@@ -1,3 +1,4 @@
+import Pattern from "./pattern.js";
 import PatternPreview from "./patternpreview.js";
 
 import React from "react";
@@ -10,10 +11,11 @@ export default class PatternPicker extends React.Component {
    * Creates a new PatternPicker.
    *
    * @param {Object} props - The component props.
-   * @param {Pattern[]} props.patterns - The list of patterns.
-   * @param {?Pattern} props.pattern - The selected pattern, or null if no pattern is selected.
-   * @param {function(pattern: Pattern)} props.onPatternChange - Called when the selected pattern
-   * changes.
+   * @param {PatternProperties[]} props.patterns - The list of each pattern's properties.
+   * @param {?PatternProperties} props.pattern - The selected pattern's properties, or null if no
+   * pattern is selected.
+   * @param {function(pattern: PatternProperties)} props.onPatternChange - Called when the selected
+   * pattern changes.
    */
   constructor(props) {
     super(props);
@@ -22,7 +24,7 @@ export default class PatternPicker extends React.Component {
   /**
    * Returns true if the given pattern is selected, false otherwise.
    *
-   * @param {Pattern} pattern - The pattern to check.
+   * @param {PatternProperties} pattern - The pattern's properties.
    * @return {boolean} True if the given pattern is selected, false otherwise.
    */
   _selected(pattern) {
@@ -39,7 +41,7 @@ export default class PatternPicker extends React.Component {
               className={this._selected(pattern) ? "selected" : ""}
               onClick={() => this.props.onPatternChange(this._selected(pattern) ? null : pattern)}
             >
-              <PatternPreview width="50" height="50" pattern={pattern}/>
+              <PatternPreview width="50" height="50" pattern={Pattern.fromRle(pattern.rle)}/>
               {pattern.name}
             </a>
           </li>

@@ -1,5 +1,8 @@
 import Cell from "./cell.js";
 
+import dropWhile from "lodash-es/dropWhile";
+import takeWhile from "lodash-es/takeWhile";
+
 /**
  * An enum of rotational directions.
  *
@@ -19,21 +22,10 @@ export default class Pattern {
   /**
    * Creates a new pattern.
    *
-   * @param {string} name - The name of the pattern.
    * @param {Cell[]} cells - The cells that make up the pattern.
    */
-  constructor(name, cells) {
-    this._name = name;
+  constructor(cells, name) {
     this._liveCells = cells.filter(cell => cell.alive);
-  }
-
-  /**
-   * The name of this pattern.
-   *
-   * @type {string}
-   */
-  get name() {
-    return this._name;
   }
 
   /**
@@ -72,7 +64,6 @@ export default class Pattern {
     let columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
 
     return new Pattern(
-      this.name,
       this._liveCells.map(
         cell => new Cell(cell.row + rowShift, cell.column + columnShift, cell.alive)
       )
@@ -90,7 +81,6 @@ export default class Pattern {
   rotate(direction, pivotRow, pivotColumn) {
     let sign = direction == Rotation.CLOCKWISE ? 1 : -1;
     return new Pattern(
-      this.name,
       this._liveCells.map(
         cell => new Cell(
           pivotRow + sign * (cell.column - pivotColumn),
@@ -111,119 +101,102 @@ export default class Pattern {
   }
 
   /**
-   * Creates a pattern from the given plaintext-formatted string. See
-   * [LifeWiki](http://conwaylife.com/wiki/Plaintext) for more information about the plaintext
-   * format.
+   * Creates a pattern from the given run-length encoded string.
    *
-   * @param {string} plaintext - The plaintext pattern string.
-   * @return {Pattern} A pattern created from the given string.
-   * @throws {Error} If the string could not be parsed.
+   * @param {string} rle - The run-length encoded pattern string.
+   * @return {Pattern} The pattern corresponding to the given string.
+   * @see http://conwaylife.com/wiki/Run_Length_Encoded
    */
-  static fromPlaintext(plaintext) {
-    // Extract the pattern name.
-    let lines = plaintext.split("\n");
-    if (lines.length == 0 || !lines[0].startsWith("!Name:")) {
-      throw new Error("Expected \"!Name:\" header");
-    }
-    let name = lines[0].substring("!Name:".length).trim();
+  static fromRle(rle) {
+    // Tokenize the pattern.
+    let lines = rle.split(/\r?\n/);
+    let tokens = dropWhile(lines, line => line.startsWith("#") || line.startsWith("x = "))
+      .join("")
+      .split(/([bo$!])/)
+      .filter(token => token != "");
 
-    // Skip the comment lines.
-    let index = 0;
-    while (index < lines.length && lines[index][0] == "!") {
-      index++;
+    // Ignore everything after the !.
+    if (tokens.indexOf("!") != -1) {
+      tokens = tokens.slice(0, tokens.indexOf("!"));
+    } else {
+      throw new Error("Missing end-of-pattern tag \"!\"");
     }
 
-    // Extract the pattern cells.
+    // Replace run counts with the equivalent number of duplicated tags.
+    let tags = tokens.map((token, index) => {
+      if (/[0-9]+/.test(token)) {
+        return tokens[index + 1].repeat(Number.parseInt(token) - 1);
+      } else {
+        return token;
+      }
+    }).join("");
+
+    // Evaluate the tags and create the pattern.
     let liveCells = [];
     let row = 0;
-    for (let line of lines.slice(index)) {
-      let column = 0;
-      for (let character of line) {
-        if (character == "O") {
-          liveCells.push(new Cell(row, column, true));
-        } else if (character != ".") {
-          throw new Error("Invalid character: " + character);
-        }
-        column++;
+    let column = 0;
+    for (let tag of tags) {
+      switch (tag) {
+        case "b":
+          column++;
+          break;
+        case "o":
+          liveCells.push(new Cell(row, column++, true));
+          break;
+        case "$":
+          row++;
+          column = 0;
+          break;
+        default:
+          throw new Error("Invalid tag \"" + tag + "\"");
       }
-      row++;
     }
-    return new Pattern(name, liveCells);
+
+    return new Pattern(liveCells);
   }
 }
 
 /**
- * A list of common Game of Life patterns.
+ * Additional properties for a pattern.
  *
- * @type {Pattern[]}
+ * @typedef {Object} PatternProperties
+ * @property {string} name - The name of the pattern.
+ * @property {string} author - The author of the pattern.
+ * @property {string} description - A description of the pattern.
+ * @property {string} rle - The run-length encoded pattern string, excluding metadata.
+ * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
-export const PATTERNS = [
-  "!Name: Blinker\n" +
-  "OOO",
 
-  "!Name: Toad\n" +
-  ".OOO\n" +
-  "OOO.",
+/**
+ * Parses a run-length encoded pattern string and returns the pattern's properties.
+ *
+ * @param {string} rle - The run-length encoded pattern string.
+ * @return {PatternProperties} The pattern's properties.
+ * @see http://conwaylife.com/wiki/Run_Length_Encoded
+ */
+export function parseRleProperties(rle) {
+  // Convert the property lines into [letter, value] pairs.
+  let lines = rle.split(/\r?\n/);
+  let preamble = takeWhile(lines, line => line.startsWith("#"))
+    .map(line => [line[1], line.substring(2).trim()]);
 
-  "!Name: Beacon\n" +
-  "OO..\n" +
-  "OO..\n" +
-  "..OO\n" +
-  "..OO",
+  // Add the [letter, value] pairs to an object.
+  let properties = {};
+  for (let [letter, value] of preamble) {
+    if (properties.hasOwnProperty(letter)) {
+      properties[letter] += " " + value;
+    } else {
+      properties[letter] = value;
+    }
+  }
 
-  "!Name: Pulsar\n" +
-  "..OO.....OO..\n" +
-  "...OO...OO...\n" +
-  "O..O.O.O.O..O\n" +
-  "OOO.OO.OO.OOO\n" +
-  ".O.O.O.O.O.O.\n" +
-  "..OOO...OOO..\n" +
-  ".............\n" +
-  "..OOO...OOO..\n" +
-  ".O.O.O.O.O.O.\n" +
-  "OOO.OO.OO.OOO\n" +
-  "O..O.O.O.O..O\n" +
-  "...OO...OO...\n" +
-  "..OO.....OO..",
+  // The remainder of the RLE string is the pattern itself.
+  let pattern = lines.slice(preamble.length + 1).join("");
 
-  "!Name: Pentadecathlon\n" +
-  "..O....O..\n" +
-  "OO.OOOO.OO\n" +
-  "..O....O..",
-
-  "!Name: Glider\n" +
-  ".O.\n" +
-  "..O\n" +
-  "OOO",
-
-  "!Name: Lightweight Spaceship\n" +
-  "O..O.\n" +
-  "....O\n" +
-  "O...O\n" +
-  ".OOOO",
-
-  "!Name: Block\n" +
-  "OO\n" +
-  "OO",
-
-  "!Name: Beehive\n" +
-  ".OO.\n" +
-  "O..O\n" +
-  ".OO.\n",
-
-  "!Name: Loaf\n" +
-  ".OO.\n" +
-  "O..O\n" +
-  ".O.O\n" +
-  "..O.",
-
-  "!Name: Boat\n" +
-  "OO.\n" +
-  "O.O\n" +
-  ".O.",
-
-  "!Name: Tub\n" +
-  ".O.\n" +
-  "O.O\n" +
-  ".O."
-].map(plaintext => Pattern.fromPlaintext(plaintext));
+  return {
+    name: properties["N"],
+    author: properties["O"],
+    description: properties["C"],
+    rle: pattern
+  };
+}

@@ -1,0 +1,70 @@
+[
+  {
+    "name": "Blinker",
+    "author": "John Conway",
+    "description": "A period 2 oscillator that is the smallest and most common oscillator. www.conwaylife.com/wiki/index.php?title=Blinker",
+    "rle": "3o!"
+  },
+  {
+    "name": "Toad",
+    "author": "Simon Norton",
+    "description": "A period 2 oscillator. The second most common oscillator (after the blinker). www.conwaylife.com/wiki/index.php?title=Toad",
+    "rle": "b3o$3o!"
+  },
+  {
+    "name": "Beacon",
+    "author": "John Conway",
+    "description": "A common period 2 oscillator. www.conwaylife.com/wiki/index.php?title=Beacon",
+    "rle": "2o2b$o3b$3bo$2b2o!"
+  },
+  {
+    "name": "Pulsar",
+    "author": "John Conway",
+    "description": "A period 3 oscillator. Despite its size, this is the fourth most common oscillator (and by far the most common of period greater than 2). www.conwaylife.com/wiki/index.php?title=Pulsar",
+    "rle": "2b3o3b3o2b2$o4bobo4bo$o4bobo4bo$o4bobo4bo$2b3o3b3o2b2$2b3o3b3o2b$o4bobo4bo$o4bobo4bo$o4bobo4bo2$2b3o3b3o!"
+  },
+  {
+    "name": "Pentadecathlon",
+    "author": "John Conway",
+    "description": "10 cells placed in a row evolve into this object, which is the most natural oscillator of period greater than 3. In fact, it is the fifth or sixth most common oscillator overall, being about as frequent as the clock, but much less frequent than the blinker, toad, beacon or pulsar. www.conwaylife.com/wiki/index.php?title=Pentadecathlon",
+    "rle": "2bo4bo2b$2ob4ob2o$2bo4bo!"
+  },
+  {
+    "name": "Glider",
+    "author": "Richard K. Guy",
+    "description": "The smallest, most common, and first discovered spaceship. Diagonal, has period 4 and speed c/4. www.conwaylife.com/wiki/index.php?title=Glider",
+    "rle": "bob$2bo$3o!"
+  },
+  {
+    "name": "Lightweight spaceship",
+    "author": "John Conway",
+    "description": "A very well-known period 4 c/2 orthogonal spaceship. www.conwaylife.com/wiki/index.php?title=Lightweight_spaceship",
+    "rle": "bo2bo$o4b$o3bo$4o!"
+  },
+  {
+    "name": "Block",
+    "description": "An extremely common 4-cell still life. www.conwaylife.com/wiki/index.php?title=Block",
+    "rle": "2o$2o!"
+  },
+  {
+    "name": "Beehive",
+    "author": "John Conway",
+    "description": "An extremely common 6-cell still life. www.conwaylife.com/wiki/index.php?title=Beehive",
+    "rle": "b2ob$o2bo$b2o!"
+  },
+  {
+    "name": "Loaf",
+    "description": "A very common 7-cell still life. www.conwaylife.com/wiki/index.php?title=Loaf",
+    "rle": "b2ob$o2bo$bobo$2bo!"
+  },
+  {
+    "name": "Boat",
+    "description": "The only 5-cell still life. www.conwaylife.com/wiki/index.php?title=Boat",
+    "rle": "2ob$obo$bo!"
+  },
+  {
+    "name": "Tub",
+    "description": "A very common 4-cell still life. www.conwaylife.com/wiki/index.php?title=Tub",
+    "rle": "bob$obo$bo!"
+  }
+]
