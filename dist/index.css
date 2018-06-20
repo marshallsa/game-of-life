@@ -60,10 +60,16 @@ canvas {
   border-right: #eee 1px solid;
 }
 
+.pattern-picker {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .patterns {
   list-style-type: none;
   padding: 0;
-  margin: 0;
+  margin: 0 0 auto 0;
   font-size: small;
 }
 .patterns li {
@@ -97,4 +103,30 @@ canvas {
 }
 .patterns .description {
   text-align: justify;
+}
+
+.pages {
+  margin: 0;
+  padding: 13px 0;
+  text-align: center;
+  font-size: small;
+  color: #666;
+}
+.pages li {
+  display: inline-block;
+}
+.pages .previous, .pages .next {
+  display: none;
+}
+.pages a {
+  cursor: pointer;
+  display: inline-block;
+  padding: 5px 10px;
+  border: transparent 1px solid;
+  border-radius: 2px;
+}
+.pages .selected a {
+  background: #d1ebff;
+  border-color: #bad1e3;
+  color: #000;
 }

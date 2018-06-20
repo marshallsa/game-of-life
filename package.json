@@ -5,13 +5,14 @@
     "build": "webpack",
     "watch": "webpack --watch",
     "docs": "esdoc",
-    "getpatterns": "babel-node --presets node8 --ignore \"node_modules\/(?!lodash-es)\" getpatterns.js"
+    "getpatterns": "babel-node --presets node8 --ignore \"node_modules/(?!lodash-es)\" getpatterns.js"
   },
   "dependencies": {
     "autobind-decorator": "^2.1.0",
     "lodash-es": "^4.17.10",
     "react": "^16.4.1",
-    "react-dom": "^16.4.1"
+    "react-dom": "^16.4.1",
+    "react-paginate": "^5.2.3"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
