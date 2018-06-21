@@ -193,9 +193,9 @@ export function readRlePattern(rle) {
 
   // The last comment line may have a URL to the pattern's web page.
   let url = "";
-  if (last(properties["C"]).startsWith("http:")) {
+  if (properties["C"] && last(properties["C"]).startsWith("http:")) {
     url = properties["C"].pop();
-  } else if (last(properties["C"]).startsWith("www.")) {
+  } else if (properties["C"] && last(properties["C"]).startsWith("www.")) {
     url = "http://" + properties["C"].pop();
   }
 
@@ -203,9 +203,9 @@ export function readRlePattern(rle) {
   let pattern = lines.slice(preamble.length + 1).join("");
 
   return {
-    name: (properties["N"] || []).join(""),
-    author: (properties["O"] || []).join(""),
-    description: (properties["C"] || []).join(""),
+    name: (properties["N"] || []).join(" "),
+    author: (properties["O"] || []).join(" "),
+    description: (properties["C"] || []).join(" "),
     url: url,
     rle: pattern
   };

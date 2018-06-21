@@ -53,7 +53,7 @@ export default class Life extends React.Component {
    * @property {?PatternPreset} patternPreset - The selected pattern preset, or null if no preset is
    * selected.
    */
-  state = {cellSize: 15, frequency: 5, playing: false, patternPreset: null};
+  state = {cellSize: 10, frequency: 5, playing: false, patternPreset: null};
 
   /**
    * The game board that contains the cells.
