@@ -109,7 +109,7 @@ export default class Pattern {
    */
   static fromPreset(preset) {
     // Parse the preset's RLE string.
-    let lines = preset.rle.split(/\r?\n/);
+    let lines = preset.pattern.split(/\r?\n/);
     let tokens = dropWhile(lines, line => line.startsWith("#") || line.startsWith("x = "))
       .join("")
       .split(/([bo$!])/)
@@ -164,7 +164,8 @@ export default class Pattern {
  * @property {string} author - The author of the pattern.
  * @property {string} description - A description of the pattern.
  * @property {string} url - The URL to the pattern's web page.
- * @property {string} rle - The run-length encoded pattern string, excluding metadata.
+ * @property {string} rule - The rulestring for the pattern in B/S notation.
+ * @property {string} pattern - The run-length encoded pattern string, excluding metadata.
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
 
@@ -176,37 +177,103 @@ export default class Pattern {
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
 export function readRlePattern(rle) {
-  // Convert the property lines into [letter, value] pairs.
   let lines = rle.split(/\r?\n/);
-  let preamble = takeWhile(lines, line => line.startsWith("#"))
-    .map(line => [line[1], line.substring(2).trim()]);
 
-  // Add the [letter, value] pairs to an object.
-  let properties = {};
-  for (let [letter, value] of preamble) {
-    if (properties.hasOwnProperty(letter)) {
-      properties[letter].push(value);
-    } else {
-      properties[letter] = [value];
-    }
-  }
+  // Read the # lines.
+  let hashLines = takeWhile(lines, line => line.startsWith("#"));
+  let hash = readRleHash(hashLines);
+
+  // Read the header line.
+  let headers = readRleHeader(lines[hashLines.length]);
+
+  // The rest of the RLE string is the pattern itself.
+  let pattern = lines.slice(hashLines.length + 1).join("");
 
   // The last comment line may have a URL to the pattern's web page.
   let url = "";
-  if (properties["C"] && last(properties["C"]).startsWith("http:")) {
-    url = properties["C"].pop();
-  } else if (properties["C"] && last(properties["C"]).startsWith("www.")) {
-    url = "http://" + properties["C"].pop();
+  if (hash.has("C")) {
+    let commentLines = hash.get("C").split("\n");
+    if (last(commentLines).startsWith("http:") || last(commentLines).startsWith("https:")) {
+      url = commentLines.pop();
+    } else if (last(commentLines).startsWith("www.")) {
+      url = "http://" + commentLines.pop();
+    }
+    hash.set("C", commentLines.join("\n"));
   }
 
-  // The remainder of the RLE string is the pattern itself.
-  let pattern = lines.slice(preamble.length + 1).join("");
-
   return {
-    name: (properties["N"] || []).join(" "),
-    author: (properties["O"] || []).join(" "),
-    description: (properties["C"] || []).join(" "),
+    name: hash.get("N") || "",
+    author: hash.get("O") || "",
+    description: hash.get("C") || "",
     url: url,
-    rle: pattern
+    rule: headers.get("rule"),
+    pattern: pattern
   };
+}
+
+/**
+ * Reads the hash lines in a run-length encoded pattern string and returns a map of letter keys to
+ * values. If a letter appears on multiple lines, each line will be separated by \n in the value.
+ *
+ * @param {string[]} lines - The hash lines in a run-length encoded pattern string.
+ * @return {Map<string, string>} A map of letter keys to values.
+ */
+function readRleHash(lines) {
+  // Convert the lines into [letter, value] pairs.
+  lines = lines.map(line => [line[1], line.substring(2).trim()]);
+
+  // Fill a map with the [letter, value] pairs, combining values that have the same letter.
+  let hash = new Map();
+  for (let [letter, value] of lines) {
+    if (hash.has(letter)) {
+      hash.set(letter, hash.get(letter) + "\n" + value);
+    } else {
+      hash.set(letter, value);
+    }
+  }
+  return hash;
+}
+
+/**
+ * Reads the header line in a run-length encoded pattern string and returns a map of each key-value
+ * pair.
+ *
+ * @param {string} line - The header line in a run-length encoded pattern string.
+ * @return {Map<string, string>} A map of each key-value pair.
+ */
+function readRleHeader(line) {
+  // Convert the key-value pairs in the header into a map.
+  let headers = new Map(
+    line
+      .split(",")
+      .map(header =>
+        header
+          .split("=")
+          .map(s => s.trim())
+      )
+  );
+
+  if (headers.has("x")) {
+    headers.set("x", Number.parseInt(headers.get("x")));
+  }
+  if (headers.has("y")) {
+    headers.set("y", Number.parseInt(headers.get("y")));
+  }
+
+  if (headers.has("rule")) {
+    let rule = headers.get("rule").toUpperCase();
+
+    // Convert S/B notation into B/S notation.
+    let sbRule = rule.match(/^S?([0-8]+)\/B?([0-8]+)$/);
+    if (sbRule != null) {
+      rule = "B" + sbRule[2] + "/S" + sbRule[1];
+    }
+
+    headers.set("rule", rule);
+  } else {
+    // Use Game of Life rules by default.
+    headers.set("rule", "B3/S23");
+  }
+
+  return headers;
 }

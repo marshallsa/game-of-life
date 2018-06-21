@@ -133,14 +133,14 @@ updateFile(ZIP_FILE, UPDATE_HOSTNAME, UPDATE_PATH, () => {
   const zip = new StreamZip({file: ZIP_FILE, storeEntries: true});
 
   zip.on("ready", () => {
-    // Get the patterns from the ZIP file and filter out patterns with no name, patterns bigger than
-    // 50x50 cells, and agars (patterns designed to be repeated infinitely).
+    // Get the patterns from the ZIP file and filter out patterns we don't want.
     let patterns = getPatternPresets(zip).filter(preset => {
       try {
         const pattern = Pattern.fromPreset(preset);
         return (
           preset.name != ""
           && !/agar/i.test(preset.description)
+          && preset.rule == "B3/S23"
           && pattern.width <= 50
           && pattern.height <= 50
         );
