@@ -55,29 +55,19 @@ export default class PatternPicker extends React.Component {
       this.state.page * PAGE_SIZE,
       (this.state.page + 1) * PAGE_SIZE
     );
-    let listItems = pagePresets.map(preset =>
-      <li
-        key={preset.name}
-        className={this._selected(preset) ? "selected" : ""}
-        onClick={() => this.props.onPresetChange(this._selected(preset) ? null : preset)}
-      >
-        <PatternPreview width="50" height="50" pattern={Pattern.fromPreset(preset)}/>
-        <span className="name">{preset.name}</span>
-        {preset.author && <span className="author">{preset.author}</span>}
-        <span className="description">
-          {preset.description + " "}
-          {preset.url &&
-            <a href={preset.url} target="_blank" onClick={(event) => event.stopPropagation()}>
-              Read more
-            </a>
-          }
-        </span>
-      </li>
-    );
 
     return (
       <div className="pattern-picker">
-        <ul className="patterns">{listItems}</ul>
+        <ul className="patterns">
+          {pagePresets.map(preset =>
+            <PatternListItem
+              key={preset.name}
+              preset={preset}
+              className={this._selected(preset) ? "selected" : ""}
+              onClick={() => this.props.onPresetChange(this._selected(preset) ? null : preset)}
+            />
+          )}
+        </ul>
         {this.props.presets.length > PAGE_SIZE &&
           <ReactPaginate
             pageCount={Math.ceil(this.props.presets.length / PAGE_SIZE)}
@@ -90,4 +80,31 @@ export default class PatternPicker extends React.Component {
       </div>
     );
   }
+}
+
+/**
+ * A list item showing the details of a pattern preset.
+ *
+ * @param {Object} props - The component props.
+ * @param {PatternPreset} props.preset - The pattern preset to show.
+ * @param {?string} props.className - The class name of the list item.
+ * @param {function(event: MouseEvent)} props.onClick - The click event handler for the list item.
+ * @return A list item showing the details of the given pattern preset.
+ */
+function PatternListItem(props) {
+  return (
+    <li className={props.className} onClick={props.onClick}>
+      <PatternPreview width="50" height="50" pattern={Pattern.fromPreset(props.preset)}/>
+      <span className="name">{props.preset.name}</span>
+      {props.preset.author && <span className="author">{props.preset.author}</span>}
+      <span className="description">
+        {props.preset.description + " "}
+        {props.preset.url &&
+          <a href={props.preset.url} target="_blank" onClick={(event) => event.stopPropagation()}>
+            Read more
+          </a>
+        }
+      </span>
+    </li>
+  );
 }
