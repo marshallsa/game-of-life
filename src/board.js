@@ -24,7 +24,7 @@ export default class Board {
    * @param {number} column - The column number of the cell.
    */
   toggle(row, column) {
-    let key = Board._toMapKey(row, column);
+    const key = Board._toMapKey(row, column);
     if (this._liveCells.has(key)) {
       this._liveCells.delete(key);
     } else {
@@ -38,7 +38,7 @@ export default class Board {
    * @param {Pattern} pattern - The pattern to add to the board.
    */
   add(pattern) {
-    for (let cell of pattern) {
+    for (const cell of pattern) {
       if (cell.alive) {
         this._liveCells.set(Board._toMapKey(cell), cell);
       }
@@ -53,7 +53,7 @@ export default class Board {
    * @return {Cell} The cell at the given row and column.
    */
   get(row, column) {
-    let key = Board._toMapKey(row, column);
+    const key = Board._toMapKey(row, column);
     if (this._liveCells.has(key)) {
       return this._liveCells.get(key);
     } else {
@@ -66,16 +66,16 @@ export default class Board {
    */
   step() {
     // Calculate the next state of every live cell and its neighbors.
-    let nextCells = new Map();
-    for (let cell of this) {
+    const nextCells = new Map();
+    for (const cell of this) {
       nextCells.set(Board._toMapKey(cell), cell.next(this._numLiveNeighbors(cell)));
-      for (let neighbor of this._neighbors(cell)) {
+      for (const neighbor of this._neighbors(cell)) {
         nextCells.set(Board._toMapKey(neighbor), neighbor.next(this._numLiveNeighbors(neighbor)));
       }
     }
 
     // Remove dead cells from the next board state and replace the current state.
-    for (let cell of nextCells.values()) {
+    for (const cell of nextCells.values()) {
       if (!cell.alive) {
         nextCells.delete(Board._toMapKey(cell));
       }
@@ -99,10 +99,10 @@ export default class Board {
    * @return {Cell[]} The given cell's neighbors.
    */
   _neighbors(cell) {
-    let neighbors = [];
+    const neighbors = [];
     for (let i = cell.row - 1; i <= cell.row + 1; i++) {
       for (let j = cell.column - 1; j <= cell.column + 1; j++) {
-        if (i != cell.row || j != cell.column) {
+        if (i !== cell.row || j !== cell.column) {
           neighbors.push(this.get(i, j));
         }
       }

@@ -36,7 +36,7 @@ export default class Pattern {
    * @type {number}
    */
   get width() {
-    let columns = this._liveCells.map(cell => cell.column);
+    const columns = this._liveCells.map(cell => cell.column);
     return Math.max(...columns) - Math.min(...columns) + 1;
   }
 
@@ -47,7 +47,7 @@ export default class Pattern {
    * @type {number}
    */
   get height() {
-    let rows = this._liveCells.map(cell => cell.row);
+    const rows = this._liveCells.map(cell => cell.row);
     return Math.max(...rows) - Math.min(...rows) + 1;
   }
 
@@ -59,10 +59,10 @@ export default class Pattern {
    * @return {Pattern} A copy of this pattern centered at the given row and column.
    */
   center(row, column) {
-    let rows = this._liveCells.map(cell => cell.row);
-    let rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
-    let columns = this._liveCells.map(cell => cell.column);
-    let columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
+    const rows = this._liveCells.map(cell => cell.row);
+    const rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
+    const columns = this._liveCells.map(cell => cell.column);
+    const columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
 
     return new Pattern(
       this._liveCells.map(
@@ -80,7 +80,7 @@ export default class Pattern {
    * @return {Pattern} A copy of this pattern rotated about the given pivot cell.
    */
   rotate(direction, pivotRow, pivotColumn) {
-    let sign = direction == Rotation.CLOCKWISE ? 1 : -1;
+    const sign = direction === Rotation.CLOCKWISE ? 1 : -1;
     return new Pattern(
       this._liveCells.map(
         cell => new Cell(
@@ -109,21 +109,21 @@ export default class Pattern {
    */
   static fromPreset(preset) {
     // Parse the preset's RLE string.
-    let lines = preset.pattern.split(/\r?\n/);
+    const lines = preset.pattern.split(/\r?\n/);
     let tokens = dropWhile(lines, line => line.startsWith("#") || line.startsWith("x = "))
       .join("")
       .split(/([bo$!])/)
-      .filter(token => token != "");
+      .filter(token => token !== "");
 
     // Ignore everything after the !.
-    if (tokens.indexOf("!") != -1) {
+    if (tokens.indexOf("!") !== -1) {
       tokens = tokens.slice(0, tokens.indexOf("!"));
     } else {
       throw new Error("Missing end-of-pattern tag \"!\"");
     }
 
     // Replace run counts with the equivalent number of duplicated tags.
-    let tags = tokens.map((token, index) => {
+    const tags = tokens.map((token, index) => {
       if (/[0-9]+/.test(token)) {
         return tokens[index + 1].repeat(Number.parseInt(token) - 1);
       } else {
@@ -132,10 +132,10 @@ export default class Pattern {
     }).join("");
 
     // Evaluate the tags and create the pattern.
-    let liveCells = [];
+    const liveCells = [];
     let row = 0;
     let column = 0;
-    for (let tag of tags) {
+    for (const tag of tags) {
       switch (tag) {
         case "b":
           column++;
@@ -177,22 +177,22 @@ export default class Pattern {
  * @see http://conwaylife.com/wiki/Run_Length_Encoded
  */
 export function readRlePattern(rle) {
-  let lines = rle.split(/\r?\n/);
+  const lines = rle.split(/\r?\n/);
 
   // Read the # lines.
-  let hashLines = takeWhile(lines, line => line.startsWith("#"));
-  let hash = readRleHash(hashLines);
+  const hashLines = takeWhile(lines, line => line.startsWith("#"));
+  const hash = readRleHash(hashLines);
 
   // Read the header line.
-  let headers = readRleHeader(lines[hashLines.length]);
+  const headers = readRleHeader(lines[hashLines.length]);
 
   // The rest of the RLE string is the pattern itself.
-  let pattern = lines.slice(hashLines.length + 1).join("");
+  const pattern = lines.slice(hashLines.length + 1).join("");
 
   // The last comment line may have a URL to the pattern's web page.
   let url = "";
   if (hash.has("C")) {
-    let commentLines = hash.get("C").split("\n");
+    const commentLines = hash.get("C").split("\n");
     if (last(commentLines).startsWith("http:") || last(commentLines).startsWith("https:")) {
       url = commentLines.pop();
     } else if (last(commentLines).startsWith("www.")) {
@@ -223,8 +223,8 @@ function readRleHash(lines) {
   lines = lines.map(line => [line[1], line.substring(2).trim()]);
 
   // Fill a map with the [letter, value] pairs, combining values that have the same letter.
-  let hash = new Map();
-  for (let [letter, value] of lines) {
+  const hash = new Map();
+  for (const [letter, value] of lines) {
     if (hash.has(letter)) {
       hash.set(letter, hash.get(letter) + "\n" + value);
     } else {
@@ -243,7 +243,7 @@ function readRleHash(lines) {
  */
 function readRleHeader(line) {
   // Convert the key-value pairs in the header into a map.
-  let headers = new Map(
+  const headers = new Map(
     line
       .split(",")
       .map(header =>
@@ -261,15 +261,14 @@ function readRleHeader(line) {
   }
 
   if (headers.has("rule")) {
-    let rule = headers.get("rule").toUpperCase();
-
-    // Convert S/B notation into B/S notation.
-    let sbRule = rule.match(/^S?([0-8]+)\/B?([0-8]+)$/);
-    if (sbRule != null) {
-      rule = "B" + sbRule[2] + "/S" + sbRule[1];
+    const sbRule = headers.get("rule").match(/^[Ss]?([0-8]+)\/[Bb]?([0-8]+)$/);
+    if (sbRule !== null) {
+      // Convert S/B notation into B/S notation.
+      headers.set("rule", "B" + sbRule[2] + "/S" + sbRule[1]);
+    } else {
+      // All rulestrings should be capitalized.
+      headers.set("rule", headers.get("rule").toUpperCase());
     }
-
-    headers.set("rule", rule);
   } else {
     // Use Game of Life rules by default.
     headers.set("rule", "B3/S23");

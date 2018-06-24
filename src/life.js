@@ -109,16 +109,16 @@ export default class Life extends React.Component {
   @autobind
   _playPause(event) {
     let playing;
-    if (event.type == "change" && event.target.type == "checkbox") {
+    if (event.type === "change" && event.target.type === "checkbox") {
       playing = event.target.checked;
-    } else if (event.type == "keyup" && event.key == " " && event.target.type != "checkbox") {
+    } else if (event.type === "keyup" && event.key === " " && event.target.type !== "checkbox") {
       playing = !this.state.playing;
     } else {
       return;
     }
 
     if (playing && !this.state.playing) {
-      let tick = () => {
+      const tick = () => {
         this._board.step();
         this._grid.draw();
         if (this.state.playing) {
@@ -140,7 +140,7 @@ export default class Life extends React.Component {
    */
   @autobind
   _changeFrequency(event) {
-    let frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
+    const frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
     this.setState({frequency});
   }
 
@@ -153,9 +153,9 @@ export default class Life extends React.Component {
   @autobind
   _zoom(event) {
     let cellSize, centerX, centerY;
-    if (event.type == "change") {
+    if (event.type === "change") {
       cellSize = event.target.valueAsNumber;
-    } else if (event.type == "wheel") {
+    } else if (event.type === "wheel") {
       cellSize = this._grid.cellSize - Math.round(event.deltaY);
       centerX = event.clientX;
       centerY = event.clientY;
@@ -176,7 +176,7 @@ export default class Life extends React.Component {
   @autobind
   _mouseDown(event) {
     // Prepare to drag if the left mouse button is pressed.
-    if (event.button == 0) {
+    if (event.button === 0) {
       this._drag = new DragMotion(event.clientX, event.clientY);
     }
   }
@@ -190,16 +190,16 @@ export default class Life extends React.Component {
   _mouseMove(event) {
     // Pan the grid if the mouse is dragged.
     if (event.buttons & 1) {
-      let [dx, dy] = this._drag.update(event.clientX, event.clientY);
-      if (dx != 0 || dy != 0) {
+      const [dx, dy] = this._drag.update(event.clientX, event.clientY);
+      if (dx !== 0 || dy !== 0) {
         this._canvas.style.cursor = "pointer";
         this._grid.translate(dx, dy);
       }
     }
 
     // Keep the selected pattern under the mouse pointer.
-    if (this._grid.ghost != null) {
-      let cell = this._grid.get(event.clientX, event.clientY);
+    if (this._grid.ghost !== null) {
+      const cell = this._grid.get(event.clientX, event.clientY);
       this._grid.ghost = this._grid.ghost.center(cell.row, cell.column);
     }
   }
@@ -212,10 +212,10 @@ export default class Life extends React.Component {
   @autobind
   _mouseUp(event) {
     // Check if this was a click instead of a drag.
-    if (event.button == 0 && !this._drag.moved) {
-      if (this._grid.ghost == null) {
+    if (event.button === 0 && !this._drag.moved) {
+      if (this._grid.ghost === null) {
         // Toggle the clicked cell.
-        let cell = this._grid.get(event.clientX, event.clientY);
+        const cell = this._grid.get(event.clientX, event.clientY);
         this._board.toggle(cell.row, cell.column);
         this._grid.draw();
       } else {
@@ -236,13 +236,13 @@ export default class Life extends React.Component {
    */
   @autobind
   _wheel(event) {
-    if (this._grid.ghost == null) {
+    if (this._grid.ghost === null) {
       // Zoom the grid.
       this._zoom(event);
     } else {
       // Rotate the selected pattern.
-      let direction = event.deltaY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE;
-      let pivot = this._grid.get(event.clientX, event.clientY);
+      const direction = event.deltaY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE;
+      const pivot = this._grid.get(event.clientX, event.clientY);
       this._grid.ghost = this._grid.ghost.rotate(direction, pivot.row, pivot.column);
     }
   }
@@ -255,10 +255,10 @@ export default class Life extends React.Component {
    */
   @autobind
   _changePattern(preset) {
-    if (preset != null) {
+    if (preset !== null) {
       // Show the pattern off-screen until the user moves their mouse over the canvas.
-      let cell = this._grid.get(0, 0);
-      let pattern = Pattern.fromPreset(preset);
+      const cell = this._grid.get(0, 0);
+      const pattern = Pattern.fromPreset(preset);
       this._grid.ghost = pattern.center(cell.row - pattern.height, cell.column - pattern.width);
     } else {
       this._grid.ghost = null;

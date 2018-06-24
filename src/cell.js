@@ -51,7 +51,7 @@ export default class Cell {
   next(numLiveNeighbors) {
     if (this._alive && (numLiveNeighbors < 2 || numLiveNeighbors > 3)) {
       return new Cell(this._row, this._column, false);
-    } else if (!this._alive && numLiveNeighbors == 3) {
+    } else if (!this._alive && numLiveNeighbors === 3) {
       return new Cell(this._row, this._column, true);
     } else {
       return this;

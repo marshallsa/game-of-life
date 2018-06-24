@@ -46,12 +46,12 @@ export default class PatternPicker extends React.Component {
    * @return {boolean} True if the given pattern preset is selected, false otherwise.
    */
   _selected(preset) {
-    return this.props.selectedPreset && this.props.selectedPreset.name == preset.name;
+    return this.props.selectedPreset && this.props.selectedPreset.name === preset.name;
   }
 
   /** @override */
   render() {
-    let pagePresets = this.props.presets.slice(
+    const pagePresets = this.props.presets.slice(
       this.state.page * PAGE_SIZE,
       (this.state.page + 1) * PAGE_SIZE
     );
@@ -96,10 +96,10 @@ function PatternListItem(props) {
     <li className={props.className} onClick={props.onClick}>
       <PatternPreview width="50" height="50" pattern={Pattern.fromPreset(props.preset)}/>
       <span className="name">{props.preset.name}</span>
-      {props.preset.author && <span className="author">{props.preset.author}</span>}
+      {props.preset.author !== "" && <span className="author">{props.preset.author}</span>}
       <span className="description">
         {props.preset.description + " "}
-        {props.preset.url &&
+        {props.preset.url !== "" &&
           <a href={props.preset.url} target="_blank" onClick={(event) => event.stopPropagation()}>
             Read more
           </a>

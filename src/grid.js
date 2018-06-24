@@ -87,26 +87,20 @@ export default class Grid {
    * center point is given, the center of the canvas is used by default.
    *
    * @param {number} cellSize - The new cell size.
-   * @param {number} [centerX] - The x coordinate to keep centered, or the horizontal midline of the
-   * canvas if not given.
-   * @param {number} [centerY] - The y coordinate to keep centered, or the vertical midline of the
-   * canvas if not given.
+   * @param {number} [centerX=canvas.width / 2] - The x coordinate to keep centered, or the
+   * horizontal midline of the canvas if not given.
+   * @param {number} [centerY=canvas.height / 2] - The y coordinate to keep centered, or the
+   * vertical midline of the canvas if not given.
    * @throws {RangeError} If cellSize is zero or negative.
    */
-  zoom(cellSize, centerX, centerY) {
+  zoom(cellSize, centerX = this._ctx.canvas.width / 2, centerY = this._ctx.canvas.height / 2) {
     if (cellSize <= 0) {
       throw new RangeError("cellSize is zero or negative");
     }
-    if (centerX == null) {
-      centerX = this._ctx.canvas.width / 2;
-    }
-    if (centerY == null) {
-      centerY = this._ctx.canvas.height / 2;
-    }
 
-    let gridCenter = this._canvasToGrid(centerX, centerY);
-    let dx = gridCenter.x / this._cellSize * (cellSize - this._cellSize);
-    let dy = gridCenter.y / this._cellSize * (cellSize - this._cellSize);
+    const gridCenter = this._canvasToGrid(centerX, centerY);
+    const dx = gridCenter.x / this._cellSize * (cellSize - this._cellSize);
+    const dy = gridCenter.y / this._cellSize * (cellSize - this._cellSize);
 
     this._cellSize = cellSize;
     this.translate(Math.round(-dx), Math.round(-dy));
@@ -141,9 +135,9 @@ export default class Grid {
    * @return {Cell} The cell at the given x and y coordinates.
    */
   get(x, y) {
-    let gridPoint = this._canvasToGrid(x, y);
-    let row = Math.floor(gridPoint.y / this.cellSize);
-    let column = Math.floor(gridPoint.x / this.cellSize);
+    const gridPoint = this._canvasToGrid(x, y);
+    const row = Math.floor(gridPoint.y / this.cellSize);
+    const column = Math.floor(gridPoint.x / this.cellSize);
     return this._board.get(row, column);
   }
 
@@ -151,13 +145,13 @@ export default class Grid {
    * Draws the grid.
    */
   draw() {
-    let ctx = this._ctx;
-    let origin = this._canvasToGrid(0, 0);
+    const ctx = this._ctx;
+    const origin = this._canvasToGrid(0, 0);
     ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
 
     this._drawCells(this._board, CELL_COLOR);
-    if (this._ghost != null) {
+    if (this._ghost !== null) {
       this._drawCells(this._ghost, GHOST_COLOR);
     }
     if (this.cellSize >= 10) {
@@ -169,13 +163,13 @@ export default class Grid {
    * Draws the gridlines.
    */
   _drawGridlines() {
-    let ctx = this._ctx;
+    const ctx = this._ctx;
     ctx.lineWidth = 1;
     ctx.strokeStyle = GRID_COLOR;
 
-    let origin = this._canvasToGrid(0, 0);
-    let topLine = Math.floor(origin.y / this.cellSize) * this.cellSize;
-    let leftLine = Math.floor(origin.x / this.cellSize) * this.cellSize;
+    const origin = this._canvasToGrid(0, 0);
+    const topLine = Math.floor(origin.y / this.cellSize) * this.cellSize;
+    const leftLine = Math.floor(origin.x / this.cellSize) * this.cellSize;
 
     // Draw the vertical gridlines.
     for (let i = leftLine; i <= origin.x + ctx.canvas.width; i += this.cellSize) {
@@ -201,9 +195,9 @@ export default class Grid {
    * @param {string} color - The color of the cells.
    */
   _drawCells(cells, color) {
-    let ctx = this._ctx;
+    const ctx = this._ctx;
     ctx.fillStyle = color;
-    for (let cell of cells) {
+    for (const cell of cells) {
       ctx.fillRect(
         cell.column * this.cellSize,
         cell.row * this.cellSize,

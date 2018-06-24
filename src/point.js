@@ -59,6 +59,6 @@ export default class Point {
    * @return {boolean} True if this point is equal to the given point, false otherwise.
    */
   equals(point) {
-    return this.x == point.x && this.y == point.y;
+    return this.x === point.x && this.y === point.y;
   }
 }

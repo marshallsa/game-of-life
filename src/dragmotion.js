@@ -42,8 +42,8 @@ export default class DragMotion {
       return [0, 0];
     }
 
-    let dx = x - this._last.x;
-    let dy = y - this._last.y;
+    const dx = x - this._last.x;
+    const dy = y - this._last.y;
     this._last = new Point(x, y);
     return [dx, dy];
   }

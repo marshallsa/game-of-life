@@ -28,20 +28,20 @@ export default class PatternPreview extends React.Component {
 
   /** @override */
   componentDidMount() {
-    let board = new Board();
+    const board = new Board();
     board.add(this.props.pattern.center(0, 0));
 
     // Zoom to fit the whole pattern in the preview.
-    let grid = new Grid(board, this._canvas.current);
-    let cellSize = Math.floor(Math.min(
+    const grid = new Grid(board, this._canvas.current);
+    const cellSize = Math.floor(Math.min(
       this.props.width / this.props.pattern.width,
       this.props.height / this.props.pattern.height
     ));
     grid.zoom(cellSize, 0, 0);
 
     // Center the pattern.
-    let dx = (this.props.width - (this.props.pattern.width % 2 != 0 ? cellSize : 0)) / 2;
-    let dy = (this.props.height - (this.props.pattern.height % 2 != 0 ? cellSize : 0)) / 2;
+    const dx = (this.props.width - (this.props.pattern.width % 2 !== 0 ? cellSize : 0)) / 2;
+    const dy = (this.props.height - (this.props.pattern.height % 2 !== 0 ? cellSize : 0)) / 2;
     grid.translate(Math.round(dx), Math.round(dy));
     grid.draw();
   }

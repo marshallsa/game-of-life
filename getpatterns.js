@@ -80,13 +80,13 @@ function updateFile(filename, hostname, path, callback) {
   }
 
   const headers = {};
-  if (time != null) {
+  if (time !== null) {
     headers["If-Modified-Since"] = time;
   }
   const request = http.get({hostname, path, headers});
 
   request.on("response", response => {
-    if (response.statusCode == 200) {
+    if (response.statusCode === 200) {
       // Download the new version.
       console.log("Updating " + filename + "...");
 
@@ -96,7 +96,7 @@ function updateFile(filename, hostname, path, callback) {
         console.log(filename + " has been updated");
         file.close(callback);
       });
-    } else if (response.statusCode == 304) {
+    } else if (response.statusCode === 304) {
       // We don't need to do anything.
       console.log(filename + " is up-to-date");
       callback();
@@ -138,9 +138,9 @@ updateFile(ZIP_FILE, UPDATE_HOSTNAME, UPDATE_PATH, () => {
       try {
         const pattern = Pattern.fromPreset(preset);
         return (
-          preset.name != ""
+          preset.name !== ""
           && !/agar/i.test(preset.description)
-          && preset.rule == "B3/S23"
+          && preset.rule === "B3/S23"
           && pattern.width <= 50
           && pattern.height <= 50
         );
@@ -153,11 +153,11 @@ updateFile(ZIP_FILE, UPDATE_HOSTNAME, UPDATE_PATH, () => {
     // Sort the patterns alphabetically by name. Also, put the patterns in COMMON_PATTERNS at the
     // beginning and pattern names that start with a number or symbol at the end.
     patterns.sort((a, b) => {
-      if (COMMON_PATTERNS.includes(a.name) != COMMON_PATTERNS.includes(b.name)) {
+      if (COMMON_PATTERNS.includes(a.name) !== COMMON_PATTERNS.includes(b.name)) {
         return COMMON_PATTERNS.includes(a.name) ? -1 : 1;
-      } else if (/^[A-Za-z]/.test(a.name) != /^[A-Za-z]/.test(b.name)) {
+      } else if (/^[A-Za-z]/.test(a.name) !== /^[A-Za-z]/.test(b.name)) {
         return /^[A-Za-z]/.test(a.name) ? -1 : 1;
-      } else if (a.name != b.name) {
+      } else if (a.name !== b.name) {
         return a.name < b.name ? -1 : 1;
       } else {
         return 0;
