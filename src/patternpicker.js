@@ -94,7 +94,7 @@ export default class PatternPicker extends React.Component {
 function PatternListItem(props) {
   return (
     <li className={props.className} onClick={props.onClick}>
-      <PatternPreview width="50" height="50" pattern={Pattern.fromPreset(props.preset)}/>
+      <PatternPreview width={50} height={50} pattern={Pattern.fromPreset(props.preset)}/>
       <span className="name">{props.preset.name}</span>
       {props.preset.author !== "" && <span className="author">{props.preset.author}</span>}
       <span className="description">

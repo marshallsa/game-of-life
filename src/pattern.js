@@ -36,6 +36,9 @@ export default class Pattern {
    * @type {number}
    */
   get width() {
+    if (this._liveCells.length === 0) {
+      return 0;
+    }
     const columns = this._liveCells.map(cell => cell.column);
     return Math.max(...columns) - Math.min(...columns) + 1;
   }
@@ -47,6 +50,9 @@ export default class Pattern {
    * @type {number}
    */
   get height() {
+    if (this._liveCells.length === 0) {
+      return 0;
+    }
     const rows = this._liveCells.map(cell => cell.row);
     return Math.max(...rows) - Math.min(...rows) + 1;
   }
