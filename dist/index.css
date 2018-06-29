@@ -87,6 +87,10 @@ canvas {
 .patterns li.selected, .patterns li.selected:hover {
   background: #d1ebff;
 }
+.patterns span {
+  overflow: hidden;
+  word-wrap: break-word;
+}
 .patterns .name {
   margin-left: 10px;
 }
