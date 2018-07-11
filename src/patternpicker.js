@@ -4,6 +4,8 @@ import PatternPreview from "./patternpreview.js";
 import React from "react";
 import ReactPaginate from "react-paginate";
 
+import autobind from "autobind-decorator";
+
 /**
  * The number of pattern presets shown on each page.
  *
@@ -27,6 +29,13 @@ export default class PatternPicker extends React.Component {
   state = {page: 0, search: ""};
 
   /**
+   * The DOM element for the list of pattern presets.
+   *
+   * @type {Object}
+   */
+  _presetList = React.createRef();
+
+  /**
    * Creates a new pattern picker.
    *
    * @param {Object} props - The component props.
@@ -38,6 +47,17 @@ export default class PatternPicker extends React.Component {
    */
   constructor(props) {
     super(props);
+  }
+
+  /**
+   * Changes the current page.
+   *
+   * @param {Object} page - The new page.
+   */
+  @autobind
+  changePage(page) {
+    this.setState({page: page.selected});
+    this._presetList.current.scrollTop = 0;
   }
 
   /**
@@ -74,7 +94,7 @@ export default class PatternPicker extends React.Component {
           onChange={event => this.setState({page: 0, search: event.target.value})}
         />
 
-        <ul className="patterns">
+        <ul className="patterns" ref={this._presetList}>
           {currentPagePresets.map(preset =>
             <PatternListItem
               key={preset.name}
@@ -90,7 +110,7 @@ export default class PatternPicker extends React.Component {
             pageCount={Math.ceil(filteredPresets.length / PAGE_SIZE)}
             pageRangeDisplayed={3}
             marginPagesDisplayed={1}
-            onPageChange={page => this.setState({page: page.selected})}
+            onPageChange={this.changePage}
             containerClassName="pages"
           />
         }

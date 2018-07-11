@@ -54,7 +54,6 @@ canvas {
   left: 0;
   bottom: 0;
   width: 220px;
-  overflow-y: auto;
 
   background: #fff;
   border-right: #eee 1px solid;
@@ -66,10 +65,11 @@ canvas {
   height: 100%;
 }
 .pattern-picker .search {
-  margin: 0 10px 10px 10px;
+  margin: 0 10px 13px 10px;
 }
 
 .patterns {
+  overflow-y: auto;
   list-style-type: none;
   padding: 0;
   margin: 0 0 auto 0;
