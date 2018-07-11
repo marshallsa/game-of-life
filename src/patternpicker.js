@@ -22,8 +22,9 @@ export default class PatternPicker extends React.Component {
    * @private
    * @type {Object}
    * @property {number} page - The current page in the list of pattern presets.
+   * @property {string} search - The current pattern search string.
    */
-  state = {page: 0};
+  state = {page: 0, search: ""};
 
   /**
    * Creates a new pattern picker.
@@ -51,15 +52,30 @@ export default class PatternPicker extends React.Component {
 
   /** @override */
   render() {
-    const pagePresets = this.props.presets.slice(
+    const lowerCaseSearch = this.state.search.toLowerCase();
+    const filteredPresets =
+      lowerCaseSearch === "" ? this.props.presets : this.props.presets.filter(preset =>
+        preset.name.toLowerCase().includes(lowerCaseSearch)
+        || preset.author.toLowerCase().includes(lowerCaseSearch)
+        || preset.description.toLowerCase().includes(lowerCaseSearch)
+      );
+
+    const currentPagePresets = filteredPresets.slice(
       this.state.page * PAGE_SIZE,
       (this.state.page + 1) * PAGE_SIZE
     );
 
     return (
       <div className="pattern-picker">
+        <input
+          className="search"
+          placeholder="Search patterns"
+          value={this.state.search}
+          onChange={event => this.setState({page: 0, search: event.target.value})}
+        />
+
         <ul className="patterns">
-          {pagePresets.map(preset =>
+          {currentPagePresets.map(preset =>
             <PatternListItem
               key={preset.name}
               preset={preset}
@@ -68,9 +84,10 @@ export default class PatternPicker extends React.Component {
             />
           )}
         </ul>
-        {this.props.presets.length > PAGE_SIZE &&
+
+        {filteredPresets.length > PAGE_SIZE &&
           <ReactPaginate
-            pageCount={Math.ceil(this.props.presets.length / PAGE_SIZE)}
+            pageCount={Math.ceil(filteredPresets.length / PAGE_SIZE)}
             pageRangeDisplayed={3}
             marginPagesDisplayed={1}
             onPageChange={page => this.setState({page: page.selected})}

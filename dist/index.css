@@ -65,6 +65,9 @@ canvas {
   flex-direction: column;
   height: 100%;
 }
+.pattern-picker .search {
+  margin: 0 10px 10px 10px;
+}
 
 .patterns {
   list-style-type: none;
