@@ -2,16 +2,8 @@ import Pattern from "./pattern.js";
 import PatternPreview from "./patternpreview.js";
 
 import React from "react";
-import ReactPaginate from "react-paginate";
 
 import autobind from "autobind-decorator";
-
-/**
- * The number of pattern presets shown on each page.
- *
- * @type {number}
- */
-const PAGE_SIZE = 20;
 
 /**
  * The names of the favorite pattern presets.
@@ -51,11 +43,10 @@ export default class PatternPicker extends React.Component {
    * @override
    * @private
    * @type {Object}
-   * @property {number} page - The current page in the list of pattern presets.
-   * @property {string} search - The current search string.
-   * @property {string} category - The current category.
+   * @property {string} search - The search filter.
+   * @property {string} category - The category filter.
    */
-  state = {page: 0, search: "", category: "favorite"};
+  state = {search: "", category: "favorite"};
 
   /**
    * The DOM element for the list of pattern presets.
@@ -79,24 +70,38 @@ export default class PatternPicker extends React.Component {
   }
 
   /**
-   * Changes the current page.
-   *
-   * @param {Object} page - The new page.
-   */
-  @autobind
-  changePage(page) {
-    this.setState({page: page.selected});
-    this._presetList.current.scrollTop = 0;
-  }
-
-  /**
    * Returns true if the given pattern preset is selected, false otherwise.
    *
    * @param {PatternPreset} preset - The pattern preset.
    * @return {boolean} True if the given pattern preset is selected, false otherwise.
    */
-  _selected(preset) {
+  _isSelected(preset) {
     return this.props.selectedPreset && this.props.selectedPreset.name === preset.name;
+  }
+
+  /**
+   * Selects or deselects the given pattern preset
+   *
+   * @param {PatternPreset} preset - The pattern preset to select or deselect.
+   */
+  @autobind
+  _togglePreset(preset) {
+    if (this._isSelected(preset)) {
+      this.props.onPresetChange(null);
+    } else {
+      this.props.onPresetChange(preset);
+    }
+  }
+
+  /**
+   * Handles change events for the category filter.
+   *
+   * @param {ChangeEvent} event - The change event.
+   */
+  @autobind
+  _handleCategoryChange(event) {
+    this.setState({category: event.target.value});
+    this._presetList.current.scrollTop = 0;
   }
 
   /** @override */
@@ -115,18 +120,10 @@ export default class PatternPicker extends React.Component {
         || preset.description.toLowerCase().includes(lowerCaseSearch)
       );
 
-    const currentPagePresets = filteredPresets.slice(
-      this.state.page * PAGE_SIZE,
-      (this.state.page + 1) * PAGE_SIZE
-    );
-
     return (
       <div className="pattern-picker">
-        <div class="search-bar">
-          <select
-            value={this.state.category}
-            onChange={(event) => this.setState({page: 0, category: event.target.value})}
-          >
+        <div className="search-bar">
+          <select value={this.state.category} onChange={this._handleCategoryChange}>
             <option value="favorite">Favorites</option>
             <option value="still life">Still Lifes</option>
             <option value="oscillator">Oscillators</option>
@@ -141,30 +138,20 @@ export default class PatternPicker extends React.Component {
           <input
             placeholder="Search"
             value={this.state.search}
-            onChange={event => this.setState({page: 0, search: event.target.value})}
+            onChange={event => this.setState({search: event.target.value})}
           />
         </div>
 
         <ul className="patterns" ref={this._presetList}>
-          {currentPagePresets.map(preset =>
+          {filteredPresets.map(preset =>
             <PatternListItem
               key={preset.name}
               preset={preset}
-              className={this._selected(preset) ? "selected" : ""}
-              onClick={() => this.props.onPresetChange(this._selected(preset) ? null : preset)}
+              className={this._isSelected(preset) ? "selected" : ""}
+              onClick={this._togglePreset}
             />
           )}
         </ul>
-
-        {filteredPresets.length > PAGE_SIZE &&
-          <ReactPaginate
-            pageCount={Math.ceil(filteredPresets.length / PAGE_SIZE)}
-            pageRangeDisplayed={3}
-            marginPagesDisplayed={1}
-            onPageChange={this.changePage}
-            containerClassName="pages"
-          />
-        }
       </div>
     );
   }
@@ -172,27 +159,43 @@ export default class PatternPicker extends React.Component {
 
 /**
  * A list item showing the details of a pattern preset.
- *
- * @param {Object} props - The component props.
- * @param {PatternPreset} props.preset - The pattern preset to show.
- * @param {?string} props.className - The class name of the list item.
- * @param {function(event: MouseEvent)} props.onClick - The click event handler for the list item.
- * @return A list item showing the details of the given pattern preset.
  */
-function PatternListItem(props) {
-  return (
-    <li className={props.className} onClick={props.onClick}>
-      <PatternPreview width={50} height={50} pattern={Pattern.fromPreset(props.preset)}/>
-      <span className="name">{props.preset.name}</span>
-      {props.preset.author !== "" && <span className="author">{props.preset.author}</span>}
-      <span className="description">
-        {props.preset.description + " "}
-        {props.preset.url !== "" &&
-          <a href={props.preset.url} target="_blank" onClick={(event) => event.stopPropagation()}>
-            Read more
-          </a>
+class PatternListItem extends React.PureComponent {
+  /**
+   * Creates a new pattern list item.
+   *
+   * @param {Object} props - The component props.
+   * @param {PatternPreset} props.preset - The pattern preset to show.
+   * @param {?string} props.className - The class name of the list item.
+   * @param {function(preset: PatternPreset)} props.onClick - The click event handler for the list
+   * item.
+   */
+  constructor(props) {
+    super(props);
+  }
+
+  /** @override */
+  render() {
+    return (
+      <li className={this.props.className} onClick={() => this.props.onClick(this.props.preset)}>
+        <PatternPreview width={50} height={50} pattern={Pattern.fromPreset(this.props.preset)}/>
+        <span className="name">{this.props.preset.name}</span>
+        {this.props.preset.author !== "" &&
+          <span className="author">{this.props.preset.author}</span>
         }
-      </span>
-    </li>
-  );
+        <span className="description">
+          {this.props.preset.description + " "}
+          {this.props.preset.url !== "" &&
+            <a
+              href={this.props.preset.url}
+              target="_blank"
+              onClick={(event) => event.stopPropagation()}
+            >
+              Read more
+            </a>
+          }
+        </span>
+      </li>
+    );
+  }
 }

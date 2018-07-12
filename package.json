@@ -11,8 +11,7 @@
     "autobind-decorator": "^2.1.0",
     "lodash-es": "^4.17.10",
     "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "react-paginate": "^5.2.3"
+    "react-dom": "^16.4.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
