@@ -46,6 +46,13 @@ export default class Board {
   }
 
   /**
+   * Removes all live cells from the board.
+   */
+  clear() {
+    this._liveCells.clear();
+  }
+
+  /**
    * Returns the cell at the given row and column.
    *
    * @param {number} row - The row number of the cell.

@@ -267,6 +267,15 @@ export default class Life extends React.Component {
     this.setState({patternPreset: preset});
   }
 
+  /**
+   * Removes all live cells from the board.
+   */
+  @autobind
+  _clearBoard() {
+    this._board.clear();
+    this._grid.draw();
+  }
+
   /** @override */
   render() {
     return (
@@ -286,6 +295,9 @@ export default class Life extends React.Component {
           <label className="item">
             <input type="checkbox" checked={this.state.playing} onChange={this._playPause}/>
             <span>Play</span>
+          </label>
+          <label className="item">
+            <button onClick={this._clearBoard}>Clear</button>
           </label>
           <label className="item">
             <input
