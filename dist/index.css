@@ -64,6 +64,14 @@ canvas {
   flex-direction: column;
   height: 100%;
 }
+.pattern-picker .categories {
+  font-size: small;
+  margin: 0 10px 13px 10px;
+}
+.pattern-picker .categories label {
+  display: inline-block;
+  width: 50%;
+}
 .pattern-picker .search {
   margin: 0 10px 13px 10px;
 }

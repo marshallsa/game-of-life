@@ -35,34 +35,6 @@ const ZIP_FILE = "patterns.zip";
 const JSON_FILE = "patterns.json";
 
 /**
- * A list of common patterns that should appear first in the output.
- *
- * @type {string[]}
- */
-const COMMON_PATTERNS = Object.freeze([
-  "Beacon",
-  "Beehive",
-  "Blinker",
-  "Block",
-  "Boat",
-  "Eater 1",
-  "Figure eight",
-  "Glider",
-  "Gosper glider gun",
-  "Lightweight spaceship",
-  "Loaf",
-  "Lobster (spaceship)",
-  "Pentadecathlon",
-  "Puffer 1",
-  "Pulsar",
-  "Queen bee shuttle",
-  "R-pentomino",
-  "Space rake",
-  "Toad",
-  "Tub"
-]);
-
-/**
  * Downloads a file from a remote server if a newer version is available.
  *
  * @param {[type]} filename - The name of the local file.
@@ -150,12 +122,10 @@ updateFile(ZIP_FILE, UPDATE_HOSTNAME, UPDATE_PATH, () => {
       }
     });
 
-    // Sort the patterns alphabetically by name. Also, put the patterns in COMMON_PATTERNS at the
-    // beginning and pattern names that start with a number or symbol at the end.
+    // Sort the patterns alphabetically by name, but with pattern names that start with a number or
+    // symbol at the end.
     patterns.sort((a, b) => {
-      if (COMMON_PATTERNS.includes(a.name) !== COMMON_PATTERNS.includes(b.name)) {
-        return COMMON_PATTERNS.includes(a.name) ? -1 : 1;
-      } else if (/^[A-Za-z]/.test(a.name) !== /^[A-Za-z]/.test(b.name)) {
+      if (/^[A-Za-z]/.test(a.name) !== /^[A-Za-z]/.test(b.name)) {
         return /^[A-Za-z]/.test(a.name) ? -1 : 1;
       } else if (a.name !== b.name) {
         return a.name < b.name ? -1 : 1;

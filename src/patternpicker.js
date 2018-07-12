@@ -3,6 +3,7 @@ import PatternPreview from "./patternpreview.js";
 
 import React from "react";
 import ReactPaginate from "react-paginate";
+import {RadioGroup, Radio} from "react-radio-group";
 
 import autobind from "autobind-decorator";
 
@@ -12,6 +13,34 @@ import autobind from "autobind-decorator";
  * @type {number}
  */
 const PAGE_SIZE = 20;
+
+/**
+ * The names of the favorite pattern presets.
+ *
+ * @type {string[]}
+ */
+const FAVORITES = Object.freeze([
+  "Beacon",
+  "Beehive",
+  "Blinker",
+  "Block",
+  "Boat",
+  "Eater 1",
+  "Figure eight",
+  "Glider",
+  "Gosper glider gun",
+  "Lightweight spaceship",
+  "Loaf",
+  "Lobster (spaceship)",
+  "Pentadecathlon",
+  "Puffer 1",
+  "Pulsar",
+  "Queen bee shuttle",
+  "R-pentomino",
+  "Space rake",
+  "Toad",
+  "Tub"
+]);
 
 /**
  * Lets the user pick a pattern from a list of presets.
@@ -24,9 +53,10 @@ export default class PatternPicker extends React.Component {
    * @private
    * @type {Object}
    * @property {number} page - The current page in the list of pattern presets.
-   * @property {string} search - The current pattern search string.
+   * @property {string} search - The current search string.
+   * @property {string} category - The current category.
    */
-  state = {page: 0, search: ""};
+  state = {page: 0, search: "", category: "favorite"};
 
   /**
    * The DOM element for the list of pattern presets.
@@ -73,8 +103,14 @@ export default class PatternPicker extends React.Component {
   /** @override */
   render() {
     const lowerCaseSearch = this.state.search.toLowerCase();
-    const filteredPresets =
-      lowerCaseSearch === "" ? this.props.presets : this.props.presets.filter(preset =>
+    const filteredPresets = this.props.presets
+      .filter(preset =>
+        this.state.category === "all"
+        || (this.state.category === "favorite" && FAVORITES.includes(preset.name))
+        || preset.name.toLowerCase().includes(this.state.category)
+        || preset.description.toLowerCase().includes(this.state.category)
+      )
+      .filter(preset =>
         preset.name.toLowerCase().includes(lowerCaseSearch)
         || preset.author.toLowerCase().includes(lowerCaseSearch)
         || preset.description.toLowerCase().includes(lowerCaseSearch)
@@ -87,9 +123,25 @@ export default class PatternPicker extends React.Component {
 
     return (
       <div className="pattern-picker">
+        <RadioGroup
+          className="categories"
+          selectedValue={this.state.category}
+          onChange={category => this.setState({page: 0, category})}
+        >
+          <label><Radio value="favorite"/> Favorites</label>
+          <label><Radio value="still life"/> Still Lifes</label>
+          <label><Radio value="oscillator"/> Oscillators</label>
+          <label><Radio value="spaceship"/> Spaceships</label>
+          <label><Radio value="puffer"/> Puffers</label>
+          <label><Radio value="gun"/> Guns</label>
+          <label><Radio value="methuselah"/> Methuselahs</label>
+          <label><Radio value="wick"/> Wicks</label>
+          <label><Radio value="all"/> All</label>
+        </RadioGroup>
+
         <input
           className="search"
-          placeholder="Search patterns"
+          placeholder={"Search " + this.state.category + " patterns"}
           value={this.state.search}
           onChange={event => this.setState({page: 0, search: event.target.value})}
         />
