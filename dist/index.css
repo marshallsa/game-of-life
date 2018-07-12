@@ -53,7 +53,7 @@ canvas {
   top: 40px;
   left: 0;
   bottom: 0;
-  width: 220px;
+  width: 250px;
 
   background: #fff;
   border-right: #eee 1px solid;
@@ -64,16 +64,18 @@ canvas {
   flex-direction: column;
   height: 100%;
 }
-.pattern-picker .categories {
-  font-size: small;
+.pattern-picker .search-bar {
   margin: 0 10px 13px 10px;
 }
-.pattern-picker .categories label {
-  display: inline-block;
-  width: 50%;
+.pattern-picker .search-bar select, .pattern-picker .search-bar input {
+  box-sizing: border-box;
 }
-.pattern-picker .search {
-  margin: 0 10px 13px 10px;
+.pattern-picker .search-bar select {
+  width: 40%;
+  padding: 2px;
+}
+.pattern-picker .search-bar input {
+  width: 60%;
 }
 
 .patterns {

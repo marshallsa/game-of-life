@@ -3,7 +3,6 @@ import PatternPreview from "./patternpreview.js";
 
 import React from "react";
 import ReactPaginate from "react-paginate";
-import {RadioGroup, Radio} from "react-radio-group";
 
 import autobind from "autobind-decorator";
 
@@ -123,28 +122,28 @@ export default class PatternPicker extends React.Component {
 
     return (
       <div className="pattern-picker">
-        <RadioGroup
-          className="categories"
-          selectedValue={this.state.category}
-          onChange={category => this.setState({page: 0, category})}
-        >
-          <label><Radio value="favorite"/> Favorites</label>
-          <label><Radio value="still life"/> Still Lifes</label>
-          <label><Radio value="oscillator"/> Oscillators</label>
-          <label><Radio value="spaceship"/> Spaceships</label>
-          <label><Radio value="puffer"/> Puffers</label>
-          <label><Radio value="gun"/> Guns</label>
-          <label><Radio value="methuselah"/> Methuselahs</label>
-          <label><Radio value="wick"/> Wicks</label>
-          <label><Radio value="all"/> All</label>
-        </RadioGroup>
+        <div class="search-bar">
+          <select
+            value={this.state.category}
+            onChange={(event) => this.setState({page: 0, category: event.target.value})}
+          >
+            <option value="favorite">Favorites</option>
+            <option value="still life">Still Lifes</option>
+            <option value="oscillator">Oscillators</option>
+            <option value="spaceship">Spaceships</option>
+            <option value="puffer">Puffers</option>
+            <option value="gun">Guns</option>
+            <option value="methuselah">Methuselahs</option>
+            <option value="wick">Wicks</option>
+            <option value="all">All</option>
+          </select>
 
-        <input
-          className="search"
-          placeholder={"Search " + this.state.category + " patterns"}
-          value={this.state.search}
-          onChange={event => this.setState({page: 0, search: event.target.value})}
-        />
+          <input
+            placeholder="Search"
+            value={this.state.search}
+            onChange={event => this.setState({page: 0, search: event.target.value})}
+          />
+        </div>
 
         <ul className="patterns" ref={this._presetList}>
           {currentPagePresets.map(preset =>
