@@ -216,7 +216,7 @@ export default class Life extends React.Component {
       if (this._grid.ghost === null) {
         // Toggle the clicked cell.
         const cell = this._grid.get(event.clientX, event.clientY);
-        this._board.toggle(cell.row, cell.column);
+        this._board.set(cell.row, cell.column, !this._board.get(cell.row, cell.column).alive);
         this._grid.draw();
       } else {
         // Place the selected pattern on the board.

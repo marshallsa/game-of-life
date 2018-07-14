@@ -150,7 +150,7 @@ export default class Grid {
     ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
 
-    this._drawCells(this._board, CELL_COLOR);
+    this._drawCells(this._board.liveCells(), CELL_COLOR);
     if (this._ghost !== null) {
       this._drawCells(this._ghost, GHOST_COLOR);
     }

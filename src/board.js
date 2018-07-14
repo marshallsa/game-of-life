@@ -5,30 +5,59 @@ import Cell from "./cell.js";
  */
 export default class Board {
   /**
-   * Creates a new board.
+   * A map from coordinates to cells that may change in the next step and must be simulated. Cells
+   * in the map can be either alive or dead.
+   *
+   * @type {Map<string, Cell>}
    */
-  constructor() {
-    /**
-     * Maps stringified row-column pairs to cells.
-     *
-     * @type {Map<String, Cell>}
-     */
-    this._liveCells = new Map();
-  }
+  _activeCells = new Map();
 
   /**
-   * Toggles the state of the cell at the given row and column from alive to dead or from dead to
-   * alive.
+   * A map from coordinates to cells that cannot change in the next step and should be ignored in
+   * the simulation. Cells in the map must be alive.
+   *
+   * @type {Map<string, Cell>}
+   */
+  _stableCells = new Map();
+
+  /**
+   * Returns the cell at the given row and column.
    *
    * @param {number} row - The row number of the cell.
    * @param {number} column - The column number of the cell.
+   * @return {Cell} The cell at the given row and column.
    */
-  toggle(row, column) {
-    const key = Board._toMapKey(row, column);
-    if (this._liveCells.has(key)) {
-      this._liveCells.delete(key);
+  get(row, column) {
+    const key = keyFromCoordinates(row, column);
+    if (this._activeCells.has(key)) {
+      return this._activeCells.get(key);
+    } else if (this._stableCells.has(key)) {
+      return this._stableCells.get(key);
     } else {
-      this._liveCells.set(key, new Cell(row, column, true));
+      return new Cell(row, column, false);
+    }
+  }
+
+  /**
+   * Sets the state of the cell at the given row and column.
+   *
+   * @param {number} row - The row number of the cell.
+   * @param {number} column - The column number of the cell.
+   * @param {boolean} alive - True if the cell is alive, false otherwise.
+   */
+  set(row, column, alive) {
+    // Update and activate the cell if the new state is different.
+    if (alive !== this.get(row, column).alive) {
+      const key = keyFromCoordinates(row, column);
+      const cell = new Cell(row, column, alive);
+      this._activeCells.set(key, cell);
+      this._stableCells.delete(key);
+
+      // Activate the cell's neighbors.
+      for (const neighbor of this._neighbors(cell)) {
+        this._activeCells.set(keyFromCell(neighbor), neighbor);
+        this._stableCells.delete(keyFromCell(neighbor));
+      }
     }
   }
 
@@ -40,7 +69,7 @@ export default class Board {
   add(pattern) {
     for (const cell of pattern) {
       if (cell.alive) {
-        this._liveCells.set(Board._toMapKey(cell), cell);
+        this.set(cell.row, cell.column, true);
       }
     }
   }
@@ -49,54 +78,52 @@ export default class Board {
    * Removes all live cells from the board.
    */
   clear() {
-    this._liveCells.clear();
-  }
-
-  /**
-   * Returns the cell at the given row and column.
-   *
-   * @param {number} row - The row number of the cell.
-   * @param {number} column - The column number of the cell.
-   * @return {Cell} The cell at the given row and column.
-   */
-  get(row, column) {
-    const key = Board._toMapKey(row, column);
-    if (this._liveCells.has(key)) {
-      return this._liveCells.get(key);
-    } else {
-      return new Cell(row, column, false);
-    }
+    this._activeCells.clear();
+    this._stableCells.clear();
   }
 
   /**
    * Steps the state of the board forward.
    */
   step() {
-    // Calculate the next state of every live cell and its neighbors.
-    const nextCells = new Map();
-    for (const cell of this) {
-      nextCells.set(Board._toMapKey(cell), cell.next(this._numLiveNeighbors(cell)));
-      for (const neighbor of this._neighbors(cell)) {
-        nextCells.set(Board._toMapKey(neighbor), neighbor.next(this._numLiveNeighbors(neighbor)));
+    // Calculate the next state of every active cell.
+    const nextActiveCells = new Map();
+    for (const [key, cell] of this._activeCells) {
+      const next = cell.next(this._neighbors(cell).filter(neighbor => neighbor.alive).length);
+      if (cell.alive !== next.alive) {
+        nextActiveCells.set(key, next);
+      } else if (next.alive) {
+        this._stableCells.set(key, next);
+      } else {
+        this._stableCells.delete(key);
       }
     }
+    this._activeCells = nextActiveCells;
 
-    // Remove dead cells from the next board state and replace the current state.
-    for (const cell of nextCells.values()) {
-      if (!cell.alive) {
-        nextCells.delete(Board._toMapKey(cell));
+    // Activate the neighbors of each active cell.
+    for (const cell of Array.from(this._activeCells.values())) {
+      for (const neighbor of this._neighbors(cell)) {
+        this._activeCells.set(keyFromCell(neighbor), neighbor);
+        this._stableCells.delete(keyFromCell(neighbor));
       }
     }
-    this._liveCells = nextCells;
   }
 
   /**
-   * Returns an iterator for the board's live cells.
+   * Returns a generator for the board's live cells.
    *
-   * @return {Iterator<Cell>} An iterator for the board's live cells.
+   * @return {Generator<Cell>} A generator for the board's live cells.
    */
-  [Symbol.iterator]() {
-    return this._liveCells.values();
+  *liveCells() {
+    for (const cell of this._activeCells.values()) {
+      if (cell.alive) {
+        yield cell;
+      }
+    }
+
+    for (const cell of this._stableCells.values()) {
+      yield cell;
+    }
   }
 
   /**
@@ -116,31 +143,25 @@ export default class Board {
     }
     return neighbors;
   }
+}
 
-  /**
-   * Returns how many of the given cell's neighbors are alive.
-   *
-   * @param {Cell} cell - The cell whose live neighbors will be counted.
-   * @return {number} The number of the given cell's neighbors that are alive.
-   */
-  _numLiveNeighbors(cell) {
-    return this._neighbors(cell).filter(neighbor => neighbor.alive).length;
-  }
+/**
+ * Returns the map key for the given row and column.
+ *
+ * @param {number} row - The key's row.
+ * @param {number} column - The key's column.
+ * @return {string} The map key for the given row and column.
+ */
+function keyFromCoordinates(row, column) {
+  return row + "," + column;
+}
 
-  /**
-   * Returns the map key for the given cell or row and column numbers. This method accepts either
-   * one argument (the cell) or two arguments (the row and column numbers).
-   *
-   * @param {number} [row] - The cell's row number.
-   * @param {number} [column] - The cell's column number.
-   * @param {Cell} [cell] - The cell itself.
-   * @return {String} The map key for the given cell or row and column numbers.
-   */
-  static _toMapKey() {
-    if (arguments.length >= 2) {
-      return arguments[0] + "," + arguments[1];
-    } else {
-      return Board._toMapKey(arguments[0].row, arguments[0].column);
-    }
-  }
+/**
+ * Returns the map key for the given cell.
+ *
+ * @param {Cell} cell - The key's cell.
+ * @return {string} The map key for the given cell.
+ */
+function keyFromCell(cell) {
+  return keyFromCoordinates(cell.row, cell.column);
 }
