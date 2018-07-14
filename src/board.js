@@ -94,8 +94,6 @@ export default class Board {
         nextActiveCells.set(key, next);
       } else if (next.alive) {
         this._stableCells.set(key, next);
-      } else {
-        this._stableCells.delete(key);
       }
     }
     this._activeCells = nextActiveCells;
