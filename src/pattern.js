@@ -1,166 +1,5 @@
 import Cell from "./cell.js";
-
-import dropWhile from "lodash-es/dropWhile";
-import last from "lodash-es/last";
-import takeWhile from "lodash-es/takeWhile";
-
-/**
- * An enum of rotational directions.
- *
- * @type {Object}
- * @property {symbol} CLOCKWISE - Clockwise rotation.
- * @property {symbol} COUNTERCLOCKWISE - Counterclockwise rotation.
- */
-export const Rotation = Object.freeze({
-  CLOCKWISE: Symbol("CLOCKWISE"),
-  COUNTERCLOCKWISE: Symbol("COUNTERCLOCKWISE")
-});
-
-/**
- * A pattern is a collection of cells.
- */
-export default class Pattern {
-  /**
-   * Creates a new pattern.
-   *
-   * @param {Cell[]} cells - The cells that make up the pattern.
-   */
-  constructor(cells, name) {
-    this._liveCells = cells.filter(cell => cell.alive);
-  }
-
-  /**
-   * The width of this pattern. The width is the number of cells spanned from
-   * the leftmost live cell to the rightmost live cell.
-   *
-   * @type {number}
-   */
-  get width() {
-    if (this._liveCells.length === 0) {
-      return 0;
-    }
-    const columns = this._liveCells.map(cell => cell.column);
-    return Math.max(...columns) - Math.min(...columns) + 1;
-  }
-
-  /**
-   * The height of this pattern. The height is the number of cells spanned
-   * from the topmost live cell to the bottommost live cell.
-   *
-   * @type {number}
-   */
-  get height() {
-    if (this._liveCells.length === 0) {
-      return 0;
-    }
-    const rows = this._liveCells.map(cell => cell.row);
-    return Math.max(...rows) - Math.min(...rows) + 1;
-  }
-
-  /**
-   * Returns a copy of this pattern centered at the given row and column.
-   *
-   * @param {number} row - The new row the pattern is centered on.
-   * @param {number} column - The new column the pattern is centered on.
-   * @return {Pattern} A copy of this pattern centered at the given row and column.
-   */
-  center(row, column) {
-    const rows = this._liveCells.map(cell => cell.row);
-    const rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
-    const columns = this._liveCells.map(cell => cell.column);
-    const columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
-
-    return new Pattern(
-      this._liveCells.map(
-        cell => new Cell(cell.row + rowShift, cell.column + columnShift, cell.alive)
-      )
-    );
-  }
-
-  /**
-   * Returns a copy of this pattern rotated about the given pivot cell.
-   *
-   * @param {Rotation} direction - The direction of rotation.
-   * @param {number} pivotRow - The row of the pivot cell.
-   * @param {number} pivotColumn - The column of the pivot cell.
-   * @return {Pattern} A copy of this pattern rotated about the given pivot cell.
-   */
-  rotate(direction, pivotRow, pivotColumn) {
-    const sign = direction === Rotation.CLOCKWISE ? 1 : -1;
-    return new Pattern(
-      this._liveCells.map(
-        cell => new Cell(
-          pivotRow + sign * (cell.column - pivotColumn),
-          pivotColumn - sign * (cell.row - pivotRow),
-          cell.alive
-        )
-      )
-    );
-  }
-
-  /**
-   * Returns an iterator for this pattern's live cells.
-   *
-   * @return {Iterator<Cell>} An iterator for the pattern's live cells.
-   */
-  [Symbol.iterator]() {
-    return this._liveCells.values();
-  }
-
-  /**
-   * Creates a pattern from the given preset.
-   *
-   * @param {PatternPreset} preset - The pattern preset.
-   * @return {Pattern} The pattern corresponding to the given preset.
-   */
-  static fromPreset(preset) {
-    // Parse the preset's RLE string.
-    const lines = preset.pattern.split(/\r?\n/);
-    let tokens = dropWhile(lines, line => line.startsWith("#") || line.startsWith("x = "))
-      .join("")
-      .split(/([bo$!])/)
-      .filter(token => token !== "");
-
-    // Ignore everything after the !.
-    if (tokens.indexOf("!") !== -1) {
-      tokens = tokens.slice(0, tokens.indexOf("!"));
-    } else {
-      throw new Error("Missing end-of-pattern tag \"!\"");
-    }
-
-    // Replace run counts with the equivalent number of duplicated tags.
-    const tags = tokens.map((token, index) => {
-      if (/[0-9]+/.test(token)) {
-        return tokens[index + 1].repeat(Number.parseInt(token) - 1);
-      } else {
-        return token;
-      }
-    }).join("");
-
-    // Evaluate the tags and create the pattern.
-    const liveCells = [];
-    let row = 0;
-    let column = 0;
-    for (const tag of tags) {
-      switch (tag) {
-        case "b":
-          column++;
-          break;
-        case "o":
-          liveCells.push(new Cell(row, column++, true));
-          break;
-        case "$":
-          row++;
-          column = 0;
-          break;
-        default:
-          throw new Error("Invalid tag \"" + tag + "\"");
-      }
-    }
-
-    return new Pattern(liveCells);
-  }
-}
+import {cellsFromRle} from "./rle.js";
 
 /**
  * A pattern preset has a pattern's serialized string as well as metadata for the pattern.
@@ -176,109 +15,267 @@ export default class Pattern {
  */
 
 /**
- * Reads a run-length encoded pattern string and returns the preset for the pattern.
+ * An enum of rotational directions.
  *
- * @param {string} rle - The run-length encoded pattern string.
- * @return {PatternPreset} The preset for the pattern.
- * @see http://conwaylife.com/wiki/Run_Length_Encoded
+ * @type {Object}
+ * @property {symbol} CLOCKWISE - Clockwise rotation.
+ * @property {symbol} COUNTERCLOCKWISE - Counterclockwise rotation.
  */
-export function readRlePattern(rle) {
-  const lines = rle.split(/\r?\n/);
+export const Rotation = Object.freeze({
+  CLOCKWISE: Symbol("CLOCKWISE"),
+  COUNTERCLOCKWISE: Symbol("COUNTERCLOCKWISE")
+});
 
-  // Read the # lines.
-  const hashLines = takeWhile(lines, line => line.startsWith("#"));
-  const hash = readRleHash(hashLines);
+/**
+ * An immutable collection of cells.
+ */
+export default class Pattern {
+  /**
+   * A map from coordinates to cells that may change in the next time step and must be simulated.
+   * Cells in the map can be either alive or dead.
+   *
+   * @type {Map<string, Cell>}
+   */
+  _activeCells = new Map();
 
-  // Read the header line.
-  const headers = readRleHeader(lines[hashLines.length]);
+  /**
+   * A map from coordinates to cells that cannot change in the next time step and should be ignored
+   * in the simulation. Cells in the map must be alive.
+   *
+   * @type {Map<string, Cell>}
+   */
+  _stableCells = new Map();
 
-  // The rest of the RLE string is the pattern itself.
-  const pattern = lines.slice(hashLines.length + 1).join("");
-
-  // The last comment line may have a URL to the pattern's web page.
-  let url = "";
-  if (hash.has("C")) {
-    const commentLines = hash.get("C").split("\n");
-    if (last(commentLines).startsWith("http:") || last(commentLines).startsWith("https:")) {
-      url = commentLines.pop();
-    } else if (last(commentLines).startsWith("www.")) {
-      url = "http://" + commentLines.pop();
+  /**
+   * The width of this pattern. The width is the number of cells spanned from
+   * the leftmost live cell to the rightmost live cell.
+   *
+   * @type {number}
+   */
+  get width() {
+    const columns = Array.from(this.liveCells()).map(cell => cell.column);
+    if (columns.length === 0) {
+      return 0;
     }
-    hash.set("C", commentLines.join("\n"));
+    return Math.max(...columns) - Math.min(...columns) + 1;
   }
 
-  return {
-    name: hash.get("N") || "",
-    author: hash.get("O") || "",
-    description: hash.get("C") || "",
-    url: url,
-    rule: headers.get("rule"),
-    pattern: pattern
-  };
+  /**
+   * The height of this pattern. The height is the number of cells spanned
+   * from the topmost live cell to the bottommost live cell.
+   *
+   * @type {number}
+   */
+  get height() {
+    const rows = Array.from(this.liveCells()).map(cell => cell.row);
+    if (rows.length === 0) {
+      return 0;
+    }
+    return Math.max(...rows) - Math.min(...rows) + 1;
+  }
+
+  /**
+   * Returns the cell at the given row and column.
+   *
+   * @param {number} row - The row number of the cell.
+   * @param {number} column - The column number of the cell.
+   * @return {Cell} The cell at the given row and column.
+   */
+  get(row, column) {
+    const key = makeKey(row, column);
+    if (this._activeCells.has(key)) {
+      return this._activeCells.get(key);
+    }
+    if (this._stableCells.has(key)) {
+      return this._stableCells.get(key);
+    }
+    return new Cell(row, column, false);
+  }
+
+  /**
+   * Returns a copy of this pattern centered at the given row and column.
+   *
+   * @param {number} row - The new row the pattern is centered on.
+   * @param {number} column - The new column the pattern is centered on.
+   * @return {Pattern} A copy of this pattern centered at the given row and column.
+   */
+  center(row, column) {
+    const rows = Array.from(this.liveCells()).map(cell => cell.row);
+    const rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
+    const columns = Array.from(this.liveCells()).map(cell => cell.column);
+    const columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
+
+    return this._map(cell => new Cell(cell.row + rowShift, cell.column + columnShift, cell.alive));
+  }
+
+  /**
+   * Returns a copy of this pattern rotated about the given pivot cell.
+   *
+   * @param {Rotation} direction - The direction of rotation.
+   * @param {number} pivotRow - The row of the pivot cell.
+   * @param {number} pivotColumn - The column of the pivot cell.
+   * @return {Pattern} A copy of this pattern rotated about the given pivot cell.
+   */
+  rotate(direction, pivotRow, pivotColumn) {
+    const sign = direction === Rotation.CLOCKWISE ? 1 : -1;
+
+    return this._map(cell => new Cell(
+      pivotRow + sign * (cell.column - pivotColumn),
+      pivotColumn - sign * (cell.row - pivotRow),
+      cell.alive
+    ));
+  }
+
+  /**
+   * Returns a generator for this pattern's live cells.
+   *
+   * @return {Generator<Cell>} A generator for this pattern's live cells.
+   */
+  * liveCells() {
+    for (const cell of this._activeCells.values()) {
+      if (cell.alive) {
+        yield cell;
+      }
+    }
+
+    for (const cell of this._stableCells.values()) {
+      yield cell;
+    }
+  }
+
+  /**
+   * Returns a copy of this pattern with the given cells changed.
+   *
+   * @param {Iterable<Cell>} cells - The cells to change.
+   * @return {Pattern} A copy of this pattern with the given cells changed.
+   */
+  withCells(cells) {
+    const pattern = new Pattern();
+    pattern._activeCells = new Map(this._activeCells);
+    pattern._stableCells = new Map(this._stableCells);
+
+    // Change the cells.
+    const changes = [];
+    for (const cell of cells) {
+      if (cell.alive !== this.get(cell.row, cell.column).alive) {
+        const key = makeKey(cell.row, cell.column);
+        pattern._activeCells.set(key, cell);
+        pattern._stableCells.delete(key);
+        changes.push(cell);
+      }
+    }
+
+    // Activate the neighbors of each changed cell.
+    for (const cell of changes) {
+      for (const neighbor of pattern._neighbors(cell)) {
+        const key = makeKey(neighbor.row, neighbor.column);
+        pattern._activeCells.set(key, neighbor);
+        pattern._stableCells.delete(key);
+      }
+    }
+
+    return pattern;
+  }
+
+  /**
+   * Merges this pattern with the given pattern and returns the resulting pattern.
+   *
+   * @param {Pattern} pattern - The pattern to merge with this pattern.
+   * @return {Pattern} The resulting pattern.
+   */
+  merge(pattern) {
+    return this.withCells(pattern.liveCells());
+  }
+
+  /**
+   * Returns the next state of this pattern.
+   *
+   * @return {Pattern} The next state of this pattern.
+   */
+  next() {
+    const pattern = new Pattern();
+    pattern._stableCells = new Map(this._stableCells);
+
+    // Simulate each active cell.
+    const changes = [];
+    for (const [key, cell] of this._activeCells) {
+      const next = cell.next(this._neighbors(cell).filter(neighbor => neighbor.alive).length);
+      if (cell.alive !== next.alive) {
+        pattern._activeCells.set(key, next);
+        changes.push(next);
+      } else if (next.alive) {
+        pattern._stableCells.set(key, next);
+      }
+    }
+
+    // Activate the neighbors of each changed cell.
+    for (const cell of changes) {
+      for (const neighbor of pattern._neighbors(cell)) {
+        const key = makeKey(neighbor.row, neighbor.column);
+        pattern._activeCells.set(key, neighbor);
+        pattern._stableCells.delete(key);
+      }
+    }
+
+    return pattern;
+  }
+
+  /**
+   * Returns the neighbors of the given cell.
+   *
+   * @param {Cell} cell - The cell whose neighbors will be returned.
+   * @return {Cell[]} The given cell's neighbors.
+   */
+  _neighbors(cell) {
+    const neighbors = [];
+    for (let i = cell.row - 1; i <= cell.row + 1; i++) {
+      for (let j = cell.column - 1; j <= cell.column + 1; j++) {
+        if (i !== cell.row || j !== cell.column) {
+          neighbors.push(this.get(i, j));
+        }
+      }
+    }
+    return neighbors;
+  }
+
+  /**
+   * Maps every cell in this pattern to the cell given by the mapper function and returns the
+   * resulting pattern.
+   *
+   * @param {function(cell: Cell): Cell} mapper - The mapper function.
+   * @return {Pattern} The resulting pattern.
+   */
+  _map(mapper) {
+    const pattern = new Pattern();
+    for (const cell of this._activeCells.values()) {
+      const mapped = mapper(cell);
+      pattern._activeCells.set(makeKey(mapped.row, mapped.column), mapped);
+    }
+    for (const cell of this._stableCells.values()) {
+      const mapped = mapper(cell);
+      pattern._stableCells.set(makeKey(mapped.row, mapped.column), mapped);
+    }
+    return pattern;
+  }
+
+  /**
+   * Creates a pattern from the given preset.
+   *
+   * @param {PatternPreset} preset - The pattern preset.
+   * @return {Pattern} The pattern corresponding to the given preset.
+   */
+  static fromPreset(preset) {
+    return new Pattern().withCells(cellsFromRle(preset.pattern));
+  }
 }
 
 /**
- * Reads the hash lines in a run-length encoded pattern string and returns a map of letter keys to
- * values. If a letter appears on multiple lines, each line will be separated by \n in the value.
+ * Returns the map key for the given row and column.
  *
- * @param {string[]} lines - The hash lines in a run-length encoded pattern string.
- * @return {Map<string, string>} A map of letter keys to values.
+ * @param {number} row - The key's row.
+ * @param {number} column - The key's column.
+ * @return {string} The map key for the given row and column.
  */
-function readRleHash(lines) {
-  // Convert the lines into [letter, value] pairs.
-  lines = lines.map(line => [line[1], line.substring(2).trim()]);
-
-  // Fill a map with the [letter, value] pairs, combining values that have the same letter.
-  const hash = new Map();
-  for (const [letter, value] of lines) {
-    if (hash.has(letter)) {
-      hash.set(letter, hash.get(letter) + "\n" + value);
-    } else {
-      hash.set(letter, value);
-    }
-  }
-  return hash;
-}
-
-/**
- * Reads the header line in a run-length encoded pattern string and returns a map of each key-value
- * pair.
- *
- * @param {string} line - The header line in a run-length encoded pattern string.
- * @return {Map<string, string>} A map of each key-value pair.
- */
-function readRleHeader(line) {
-  // Convert the key-value pairs in the header into a map.
-  const headers = new Map(
-    line
-      .split(",")
-      .map(header =>
-        header
-          .split("=")
-          .map(s => s.trim())
-      )
-  );
-
-  if (headers.has("x")) {
-    headers.set("x", Number.parseInt(headers.get("x")));
-  }
-  if (headers.has("y")) {
-    headers.set("y", Number.parseInt(headers.get("y")));
-  }
-
-  if (headers.has("rule")) {
-    const sbRule = headers.get("rule").match(/^[Ss]?([0-8]+)\/[Bb]?([0-8]+)$/);
-    if (sbRule !== null) {
-      // Convert S/B notation into B/S notation.
-      headers.set("rule", "B" + sbRule[2] + "/S" + sbRule[1]);
-    } else {
-      // All rulestrings should be capitalized.
-      headers.set("rule", headers.get("rule").toUpperCase());
-    }
-  } else {
-    // Use Game of Life rules by default.
-    headers.set("rule", "B3/S23");
-  }
-
-  return headers;
+function makeKey(row, column) {
+  return row + "," + column;
 }

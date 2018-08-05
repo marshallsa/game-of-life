@@ -1,4 +1,3 @@
-import Board from "./board.js";
 import Grid from "./grid.js";
 
 import React from "react";
@@ -28,11 +27,8 @@ export default class PatternPreview extends React.Component {
 
   /** @override */
   componentDidMount() {
-    const board = new Board();
-    board.add(this.props.pattern.center(0, 0));
-
     // Zoom to fit the whole pattern in the preview.
-    const grid = new Grid(board, this._canvas.current);
+    const grid = new Grid(this.props.pattern.center(0, 0), this._canvas.current);
     const cellSize = Math.floor(Math.min(
       this.props.width / this.props.pattern.width,
       this.props.height / this.props.pattern.height

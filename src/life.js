@@ -1,4 +1,4 @@
-import Board from "./board.js";
+import Cell from "./cell.js";
 import DragMotion from "./dragmotion.js";
 import Grid from "./grid.js";
 import Pattern, {Rotation} from "./pattern.js";
@@ -56,13 +56,6 @@ export default class Life extends React.Component {
   state = {cellSize: 10, frequency: 5, playing: false, patternPreset: null};
 
   /**
-   * The game board that contains the cells.
-   *
-   * @type {?Board}
-   */
-  _board = null;
-
-  /**
    * The canvas that shows the game.
    *
    * @type {?HTMLCanvasElement}
@@ -70,7 +63,7 @@ export default class Life extends React.Component {
   _canvas = null;
 
   /**
-   * The game grid that shows the board on the canvas.
+   * The grid that shows the game on the canvas.
    *
    * @type {?Grid}
    */
@@ -92,8 +85,7 @@ export default class Life extends React.Component {
 
   /** @override */
   componentDidMount() {
-    this._board = new Board();
-    this._grid = new Grid(this._board, this._canvas);
+    this._grid = new Grid(new Pattern(), this._canvas);
     this._grid.resize(window.innerWidth, window.innerHeight);
     this._grid.zoom(this.state.cellSize);
     window.addEventListener(
@@ -119,8 +111,7 @@ export default class Life extends React.Component {
 
     if (playing && !this.state.playing) {
       const tick = () => {
-        this._board.step();
-        this._grid.draw();
+        this._grid.pattern = this._grid.pattern.next();
         if (this.state.playing) {
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
@@ -216,11 +207,12 @@ export default class Life extends React.Component {
       if (this._grid.ghost === null) {
         // Toggle the clicked cell.
         const cell = this._grid.get(event.clientX, event.clientY);
-        this._board.set(cell.row, cell.column, !this._board.get(cell.row, cell.column).alive);
-        this._grid.draw();
+        this._grid.pattern = this._grid.pattern.withCells([
+          new Cell(cell.row, cell.column, !this._grid.pattern.get(cell.row, cell.column).alive)
+        ]);
       } else {
-        // Place the selected pattern on the board.
-        this._board.add(this._grid.ghost);
+        // Place the selected pattern on the grid.
+        this._grid.pattern = this._grid.pattern.merge(this._grid.ghost);
         this._changePattern(null);
       }
     }
@@ -268,12 +260,11 @@ export default class Life extends React.Component {
   }
 
   /**
-   * Removes all live cells from the board.
+   * Removes all live cells from the grid.
    */
   @autobind
-  _clearBoard() {
-    this._board.clear();
-    this._grid.draw();
+  _clear() {
+    this._grid.pattern = new Pattern();
   }
 
   /** @override */
@@ -297,7 +288,7 @@ export default class Life extends React.Component {
             <span>Play</span>
           </label>
           <label className="item">
-            <button onClick={this._clearBoard}>Clear</button>
+            <button onClick={this._clear}>Clear</button>
           </label>
           <label className="item">
             <input

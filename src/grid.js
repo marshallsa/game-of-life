@@ -29,17 +29,17 @@ const GHOST_COLOR = "#aaa";
 const GRID_COLOR = "#eee";
 
 /**
- * Shows cells from a Game of Life in a grid on a canvas.
+ * Shows cells from a pattern in a grid on a canvas.
  */
 export default class Grid {
   /**
    * Creates a new grid.
    *
-   * @param {Board} board - The board for the Game of Life.
-   * @param {HTMLCanvasElement} canvas - The canvas to show the board on.
+   * @param {Pattern} pattern - The pattern to show.
+   * @param {HTMLCanvasElement} canvas - The canvas to show the pattern on.
    */
-  constructor(board, canvas) {
-    this._board = board;
+  constructor(pattern, canvas) {
+    this._pattern = pattern;
     this._canvas = canvas;
     this._ctx = canvas.getContext("2d");
     this._translation = new Point(0, 0);
@@ -117,13 +117,24 @@ export default class Grid {
     return this._ghost;
   }
 
-  /**
-   * Updates the current ghost pattern.
-   *
-   * @type {?Pattern}
-   */
+  /** @type {?Pattern} */
   set ghost(ghost) {
     this._ghost = ghost;
+    this.draw();
+  }
+
+  /**
+   * The pattern being shown on the grid.
+   *
+   * @type {Pattern}
+   */
+  get pattern() {
+    return this._pattern;
+  }
+
+  /** @type {Pattern} */
+  set pattern(pattern) {
+    this._pattern = pattern;
     this.draw();
   }
 
@@ -138,7 +149,7 @@ export default class Grid {
     const gridPoint = this._canvasToGrid(x, y);
     const row = Math.floor(gridPoint.y / this.cellSize);
     const column = Math.floor(gridPoint.x / this.cellSize);
-    return this._board.get(row, column);
+    return this._pattern.get(row, column);
   }
 
   /**
@@ -150,9 +161,9 @@ export default class Grid {
     ctx.fillStyle = BACKGROUND_COLOR;
     ctx.fillRect(origin.x - 0.5, origin.y - 0.5, ctx.canvas.width + 0.5, ctx.canvas.height + 0.5);
 
-    this._drawCells(this._board.liveCells(), CELL_COLOR);
+    this._drawCells(this._pattern.liveCells(), CELL_COLOR);
     if (this._ghost !== null) {
-      this._drawCells(this._ghost, GHOST_COLOR);
+      this._drawCells(this._ghost.liveCells(), GHOST_COLOR);
     }
     if (this.cellSize >= 10) {
       this._drawGridlines();
