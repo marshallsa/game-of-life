@@ -1,6 +1,5 @@
+import Board from "./board.js";
 import Cell from "./cell.js";
-import DragMotion from "./dragmotion.js";
-import Grid from "./grid.js";
 import Pattern, {Rotation} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
 import patternPresets from "../patterns.json";
@@ -50,31 +49,28 @@ export default class Life extends React.Component {
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
    * @property {boolean} playing - True if the game is playing, or false if the game is paused.
-   * @property {?PatternPreset} patternPreset - The selected pattern preset, or null if no preset is
-   * selected.
+   * @property {?PatternPreset} selectedPreset - The selected pattern preset, or null if no preset
+   * is selected.
+   * @property {?Pattern} selectedPattern - The pattern for the selected pattern preset, or null if
+   * no preset is selected.
+   * @property {number} width - The width of the board.
+   * @property {number} height - The height of the board.
+   * @property {number} centerRow - The row of the cell at the center of the board.
+   * @property {number} centerColumn - The column of the cell at the center of the board.
+   * @property {Pattern} universe - The current state of the game's universe.
    */
-  state = {cellSize: 10, frequency: 5, playing: false, patternPreset: null};
-
-  /**
-   * The canvas that shows the game.
-   *
-   * @type {?HTMLCanvasElement}
-   */
-  _canvas = null;
-
-  /**
-   * The grid that shows the game on the canvas.
-   *
-   * @type {?Grid}
-   */
-  _grid = null;
-
-  /**
-   * Tracks the mouse while it's being dragged across the grid.
-   *
-   * @type {?DragMotion}
-   */
-  _drag = null;
+  state = {
+    cellSize: 10,
+    frequency: 5,
+    playing: false,
+    selectedPreset: null,
+    selectedPattern: null,
+    width: 0,
+    height: 0,
+    centerRow: 0,
+    centerColumn: 0,
+    universe: new Pattern()
+  };
 
   /**
    * The timeout ID for the next game tick.
@@ -85,12 +81,9 @@ export default class Life extends React.Component {
 
   /** @override */
   componentDidMount() {
-    this._grid = new Grid(new Pattern(), this._canvas);
-    this._grid.resize(window.innerWidth, window.innerHeight);
-    this._grid.zoom(this.state.cellSize);
-    window.addEventListener(
-      "resize", () => this._grid.resize(window.innerWidth, window.innerHeight)
-    );
+    const resize = () => this.setState({width: window.innerWidth, height: window.innerHeight});
+    window.addEventListener("resize", resize);
+    resize();
   }
 
   /**
@@ -111,7 +104,7 @@ export default class Life extends React.Component {
 
     if (playing && !this.state.playing) {
       const tick = () => {
-        this._grid.pattern = this._grid.pattern.next();
+        this.setState({universe: this.state.universe.next()});
         if (this.state.playing) {
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
@@ -124,147 +117,131 @@ export default class Life extends React.Component {
   }
 
   /**
-   * Changes the frequency of the game tick. The frequency is clamped between FREQUENCY_MIN and
-   * FREQUENCY_MAX.
+   * Handles events for changing the game frequency.
    *
-   * @param {ChangeEvent} event - The event that triggered the frequency change.
+   * @param {ChangeEvent} event - The event for changing the game frequency.
    */
   @autobind
-  _changeFrequency(event) {
+  _handleFrequencyChange(event) {
     const frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
     this.setState({frequency});
   }
 
   /**
-   * Zooms the grid to the given cell size. The cell size is clamped between CELL_SIZE_MIN and
-   * CELL_SIZE_MAX.
+   * Handles events for changing the cell size.
    *
-   * @param {ChangeEvent|WheelEvent} event - The event that triggered the zoom.
+   * @param {ChangeEvent} event - The event for changing the cell size.
    */
   @autobind
-  _zoom(event) {
-    let cellSize, centerX, centerY;
-    if (event.type === "change") {
-      cellSize = event.target.valueAsNumber;
-    } else if (event.type === "wheel") {
-      cellSize = this._grid.cellSize - Math.round(event.deltaY);
-      centerX = event.clientX;
-      centerY = event.clientY;
-    } else {
-      return;
-    }
-
-    cellSize = Math.max(CELL_SIZE_MIN, Math.min(cellSize, CELL_SIZE_MAX));
-    this._grid.zoom(cellSize, centerX, centerY);
-    this.setState({cellSize});
+  _handleSizeChange(event) {
+    this.setState({
+      cellSize: Math.max(CELL_SIZE_MIN, Math.min(event.target.valueAsNumber, CELL_SIZE_MAX))
+    });
   }
 
   /**
-   * Handles mousedown events on the canvas.
+   * Handles events for changing the selected pattern preset.
    *
-   * @param {MouseEvent} event - The mousedown event.
-   */
-  @autobind
-  _mouseDown(event) {
-    // Prepare to drag if the left mouse button is pressed.
-    if (event.button === 0) {
-      this._drag = new DragMotion(event.clientX, event.clientY);
-    }
-  }
-
-  /**
-   * Handles mousemove events on the canvas.
-   *
-   * @param {MouseEvent} event - The mousemove event.
-   */
-  @autobind
-  _mouseMove(event) {
-    // Pan the grid if the mouse is dragged.
-    if (event.buttons & 1) {
-      const [dx, dy] = this._drag.update(event.clientX, event.clientY);
-      if (dx !== 0 || dy !== 0) {
-        this._canvas.style.cursor = "pointer";
-        this._grid.translate(dx, dy);
-      }
-    }
-
-    // Keep the selected pattern under the mouse pointer.
-    if (this._grid.ghost !== null) {
-      const cell = this._grid.get(event.clientX, event.clientY);
-      this._grid.ghost = this._grid.ghost.center(cell.row, cell.column);
-    }
-  }
-
-  /**
-   * Handles mouseup events on the canvas.
-   *
-   * @param {MouseEvent} event - The mouseup event.
-   */
-  @autobind
-  _mouseUp(event) {
-    // Check if this was a click instead of a drag.
-    if (event.button === 0 && !this._drag.moved) {
-      if (this._grid.ghost === null) {
-        // Toggle the clicked cell.
-        const cell = this._grid.get(event.clientX, event.clientY);
-        this._grid.pattern = this._grid.pattern.withCells([
-          new Cell(cell.row, cell.column, !this._grid.pattern.get(cell.row, cell.column).alive)
-        ]);
-      } else {
-        // Place the selected pattern on the grid.
-        this._grid.pattern = this._grid.pattern.merge(this._grid.ghost);
-        this._changePattern(null);
-      }
-    }
-
-    this._canvas.style.cursor = "default";
-    this._drag = null;
-  }
-
-  /**
-   * Handles wheel events on the canvas.
-   *
-   * @param {WheelEvent} event - The wheel event.
-   */
-  @autobind
-  _wheel(event) {
-    if (this._grid.ghost === null) {
-      // Zoom the grid.
-      this._zoom(event);
-    } else {
-      // Rotate the selected pattern.
-      const direction = event.deltaY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE;
-      const pivot = this._grid.get(event.clientX, event.clientY);
-      this._grid.ghost = this._grid.ghost.rotate(direction, pivot.row, pivot.column);
-    }
-  }
-
-  /**
-   * Changes or clears the selected pattern preset.
-   *
-   * @param {?PatternPreset} preset - The new selected pattern preset, or null to clear the selected
+   * @param {?PatternPreset} preset - The new selected pattern preset or null to clear the selected
    * preset.
    */
   @autobind
-  _changePattern(preset) {
+  _handlePresetChange(preset) {
     if (preset !== null) {
-      // Show the pattern off-screen until the user moves their mouse over the canvas.
-      const cell = this._grid.get(0, 0);
-      const pattern = Pattern.fromPreset(preset);
-      this._grid.ghost = pattern.center(cell.row - pattern.height, cell.column - pattern.width);
+      this.setState({
+        selectedPreset: preset,
+        selectedPattern: Pattern.fromPreset(preset).center(
+          Math.floor(this.state.centerRow),
+          Math.floor(this.state.centerColumn)
+        )
+      });
     } else {
-      this._grid.ghost = null;
+      this.setState({selectedPreset: null, selectedPattern: null});
     }
-
-    this.setState({patternPreset: preset});
   }
 
   /**
-   * Removes all live cells from the grid.
+   * Handles events for changing the centered cell.
+   *
+   * @param {number} row - The row of the new centered cell.
+   * @param {number} column - The column of the new centered cell.
+   */
+  @autobind
+  _handleCenterChange(row, column) {
+    this.setState({centerRow: row, centerColumn: column});
+  }
+
+  /**
+   * Handles events for moving the mouse on the board.
+   *
+   * @param {number} row - The row of the cell below the mouse pointer.
+   * @param {number} column - The column of the cell below the mouse pointer.
+   */
+  @autobind
+  _handleMouseMove(row, column) {
+    if (this.state.selectedPattern !== null) {
+      this.setState({selectedPattern: this.state.selectedPattern.center(row, column)});
+    }
+  }
+
+  /**
+   * Handles events for clicking a cell on the board.
+   *
+   * @param {number} row - The row of the cell that was clicked.
+   * @param {number} column - The column of the cell that was clicked.
+   */
+  @autobind
+  _handleClick(row, column) {
+    if (this.state.selectedPattern !== null) {
+      this.setState({
+        selectedPreset: null,
+        selectedPattern: null,
+        universe: this.state.universe.merge(this.state.selectedPattern)
+      });
+    } else {
+      this.setState({
+        universe: this.state.universe.withCells([
+          new Cell(row, column, !this.state.universe.get(row, column).alive)
+        ])
+      });
+    }
+  }
+
+  /**
+   * Handles events for scrolling the mouse wheel on the board.
+   *
+   * @param {number} row - The row of the cell below the mouse pointer.
+   * @param {number} column - The column of the cell below the mouse pointer.
+   * @param {number} wheelX - The horizontal scroll amount.
+   * @param {number} wheelY - The vertical scroll amount.
+   */
+  @autobind
+  _handleWheel(row, column, wheelX, wheelY) {
+    if (this.state.selectedPattern !== null) {
+      // Rotate the selected pattern.
+      this.setState({
+        selectedPattern: this.state.selectedPattern.rotate(
+          wheelY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE,
+          row,
+          column
+        )
+      });
+    } else {
+      // Change the cell size.
+      const cellSize =
+        wheelY > 0 ? Math.floor(this.state.cellSize / 1.1) : Math.ceil(this.state.cellSize * 1.1);
+      this.setState({
+        cellSize: Math.max(CELL_SIZE_MIN, Math.min(cellSize, CELL_SIZE_MAX))
+      });
+    }
+  }
+
+  /**
+   * Clears the board.
    */
   @autobind
   _clear() {
-    this._grid.pattern = new Pattern();
+    this.setState({universe: new Pattern()});
   }
 
   /** @override */
@@ -280,7 +257,7 @@ export default class Life extends React.Component {
               max={FREQUENCY_MAX}
               step="1"
               value={this.state.frequency}
-              onChange={this._changeFrequency}
+              onChange={this._handleFrequencyChange}
             />
           </label>
           <label className="item">
@@ -297,7 +274,7 @@ export default class Life extends React.Component {
               max={CELL_SIZE_MAX}
               step="1"
               value={this.state.cellSize}
-              onChange={this._zoom}
+              onChange={this._handleSizeChange}
             />
             <span>{this.state.cellSize}:1</span>
           </label>
@@ -306,17 +283,23 @@ export default class Life extends React.Component {
         <div className="sidebar">
           <PatternPicker
             presets={patternPresets}
-            selectedPreset={this.state.patternPreset}
-            onPresetChange={this._changePattern}
+            selectedPreset={this.state.selectedPreset}
+            onPresetChange={this._handlePresetChange}
           />
         </div>
 
-        <canvas
-          ref={canvas => this._canvas = canvas}
-          onWheel={this._wheel}
-          onMouseDown={this._mouseDown}
-          onMouseMove={this._mouseMove}
-          onMouseUp={this._mouseUp}
+        <Board
+          width={this.state.width}
+          height={this.state.height}
+          cellSize={this.state.cellSize}
+          centerRow={this.state.centerRow}
+          centerColumn={this.state.centerColumn}
+          pattern={this.state.universe}
+          ghost={this.state.selectedPattern}
+          onCenterChange={this._handleCenterChange}
+          onMouseMove={this._handleMouseMove}
+          onClick={this._handleClick}
+          onWheel={this._handleWheel}
         />
       </div>
     );

@@ -1,5 +1,5 @@
+import Board from "./board.js";
 import Pattern from "./pattern.js";
-import PatternPreview from "./patternpreview.js";
 
 import React from "react";
 
@@ -198,4 +198,32 @@ class PatternListItem extends React.PureComponent {
       </li>
     );
   }
+}
+
+/**
+ * Shows a preview of a pattern.
+ *
+ * @param {Object} props - The component props.
+ * @param {Pattern} props.pattern - The pattern to show.
+ * @param {number} props.width - The width of the preview.
+ * @param {number} props.height - The height of the preview.
+ */
+function PatternPreview(props) {
+  const cellSize = Math.floor(
+    Math.min(
+      props.width / props.pattern.width,
+      props.height / props.pattern.height
+    )
+  );
+
+  return (
+    <Board
+      width={props.width}
+      height={props.height}
+      cellSize={cellSize}
+      centerRow={props.pattern.height % 2 !== 0 ? 0.5 : 0}
+      centerColumn={props.pattern.width % 2 !== 0 ? 0.5 : 0}
+      pattern={props.pattern.center(0, 0)}
+    />
+  );
 }
