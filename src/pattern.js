@@ -47,6 +47,18 @@ export default class Pattern {
   _stableCells = new Map();
 
   /**
+   * True if this pattern contains no live cells, false otherwise.
+   *
+   * @type {boolean}
+   */
+  get empty() {
+    for (const cell of this.liveCells()) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
    * The width of this pattern. The width is the number of cells spanned from
    * the leftmost live cell to the rightmost live cell.
    *

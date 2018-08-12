@@ -2,6 +2,7 @@ import Board from "./board.js";
 import Cell from "./cell.js";
 import Pattern, {Rotation} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
+import Timeline from "./timeline.js";
 import patternPresets from "../patterns.json";
 
 import autobind from "autobind-decorator";
@@ -57,7 +58,7 @@ export default class Life extends React.Component {
    * @property {number} height - The height of the board.
    * @property {number} centerRow - The row of the cell at the center of the board.
    * @property {number} centerColumn - The column of the cell at the center of the board.
-   * @property {Pattern} universe - The current state of the game's universe.
+   * @property {Pattern} timeline - The timeline of board states.
    */
   state = {
     cellSize: 10,
@@ -69,7 +70,7 @@ export default class Life extends React.Component {
     height: 0,
     centerRow: 0,
     centerColumn: 0,
-    universe: new Pattern()
+    timeline: new Timeline()
   };
 
   /**
@@ -104,8 +105,8 @@ export default class Life extends React.Component {
 
     if (playing && !this.state.playing) {
       const tick = () => {
-        this.setState({universe: this.state.universe.next()});
         if (this.state.playing) {
+          this.setState({timeline: this.state.timeline.next()});
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
       };
@@ -196,13 +197,16 @@ export default class Life extends React.Component {
       this.setState({
         selectedPreset: null,
         selectedPattern: null,
-        universe: this.state.universe.merge(this.state.selectedPattern)
+        timeline: this.state.timeline.with(this.state.timeline.pattern.merge(this.state.selectedPattern))
       });
     } else {
       this.setState({
-        universe: this.state.universe.withCells([
-          new Cell(row, column, !this.state.universe.get(row, column).alive)
-        ])
+        playing: false,
+        timeline: this.state.timeline.with(
+          this.state.timeline.pattern.withCells([
+            new Cell(row, column, !this.state.timeline.pattern.get(row, column).alive)
+          ])
+        )
       });
     }
   }
@@ -237,11 +241,38 @@ export default class Life extends React.Component {
   }
 
   /**
+   * Moves to the next board state.
+   */
+  @autobind
+  _next() {
+    this.setState({
+      playing: false,
+      timeline: this.state.timeline.next()
+    });
+  }
+
+  /**
+   * Moves to the previous board state.
+   */
+  @autobind
+  _previous() {
+    this.setState({
+      playing: false,
+      timeline: this.state.timeline.previous()
+    });
+  }
+
+  /**
    * Clears the board.
    */
   @autobind
   _clear() {
-    this.setState({universe: new Pattern()});
+    if (!this.state.timeline.pattern.empty) {
+      this.setState({
+        playing: false,
+        timeline: this.state.timeline.with(new Pattern())
+      });
+    }
   }
 
   /** @override */
@@ -260,13 +291,19 @@ export default class Life extends React.Component {
               onChange={this._handleFrequencyChange}
             />
           </label>
+          <button
+            className="item"
+            disabled={this.state.timeline.patternsBefore === 0}
+            onClick={this._previous}
+          >
+            {"<"}
+          </button>
           <label className="item">
             <input type="checkbox" checked={this.state.playing} onChange={this._playPause}/>
             <span>Play</span>
           </label>
-          <label className="item">
-            <button onClick={this._clear}>Clear</button>
-          </label>
+          <button className="item" onClick={this._next}>{">"}</button>
+          <button className="item" onClick={this._clear}>Clear</button>
           <label className="item">
             <input
               type="range"
@@ -294,7 +331,7 @@ export default class Life extends React.Component {
           cellSize={this.state.cellSize}
           centerRow={this.state.centerRow}
           centerColumn={this.state.centerColumn}
-          pattern={this.state.universe}
+          pattern={this.state.timeline.pattern}
           ghost={this.state.selectedPattern}
           onCenterChange={this._handleCenterChange}
           onMouseMove={this._handleMouseMove}
