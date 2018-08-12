@@ -5,62 +5,53 @@ import Pattern from "./pattern.js";
  */
 export default class Timeline {
   /**
-   * The list of patterns in the timeline.
+   * The present pattern.
    *
-   * @type {Object[]}
+   * @type {Pattern}
    */
-  _patterns = [
-    {
-      generation: 0,
-      pattern: new Pattern()
-    }
-  ];
+  _pattern = new Pattern();
 
   /**
-   * The index of the current pattern.
+   * The present generation number.
    *
    * @type {number}
    */
-  _index = this._patterns.length - 1;
+  _generation = 0;
 
   /**
-   * The generation number of the current pattern.
+   * The list of past patterns.
    *
-   * @type {number}
+   * @type {?Node}
    */
-  get generation() {
-    return this._patterns[this._index].generation;
-  }
+  _past = null;
 
   /**
-   * The current pattern.
+   * The list of future patterns.
+   *
+   * @type {?Node}
+   */
+  _future = null;
+
+  /**
+   * The present pattern.
    *
    * @type {Pattern}
    */
   get pattern() {
-    return this._patterns[this._index].pattern;
+    return this._pattern;
   }
 
   /**
-   * The number of patterns in the timeline before the current pattern.
+   * The present generation number.
    *
    * @type {number}
    */
-  get patternsBefore() {
-    return this._index;
+  get generation() {
+    return this._generation;
   }
 
   /**
-   * The number of patterns in the timeline after the current pattern.
-   *
-   * @type {number}
-   */
-  get patternsAfter() {
-    return this._patterns.length - this._index - 1;
-  }
-
-  /**
-   * Returns a new timeline with the given pattern added after the current pattern. Any other future
+   * Returns a new timeline with the given pattern added after the present pattern. Any other future
    * patterns are removed from the timeline.
    *
    * @param {Pattern} pattern - The pattern to add.
@@ -68,11 +59,8 @@ export default class Timeline {
    */
   with(pattern) {
     const timeline = new Timeline();
-    timeline._patterns = [
-      ...this._patterns.slice(0, this._index + 1),
-      {generation: 0, pattern: pattern}
-    ];
-    timeline._index = timeline._patterns.length - 1;
+    timeline._pattern = pattern;
+    timeline._past = new Node(this._pattern, this._generation, this._past);
     return timeline;
   }
 
@@ -82,24 +70,23 @@ export default class Timeline {
    * @return {Timeline} The new timeline.
    */
   next() {
-    const timeline = new Timeline();
-
-    if (this.patternsAfter === 0 && this.pattern.empty) {
+    if (this._future === null && this._pattern.empty) {
       return this;
-    } else if (this.patternsAfter === 0) {
-      timeline._patterns = [
-        ...this._patterns,
-        {
-          generation: this.generation + 1,
-          pattern: this.pattern.next()
-        }
-      ];
-      timeline._index = timeline._patterns.length - 1;
-    } else {
-      timeline._patterns = this._patterns;
-      timeline._index = this._index + 1;
     }
 
+    if (this._future === null) {
+      const timeline = new Timeline();
+      timeline._pattern = this._pattern.next();
+      timeline._generation = this._generation + 1;
+      timeline._past = new Node(this._pattern, this._generation, this._past);
+      return timeline;
+    }
+
+    const timeline = new Timeline();
+    timeline._pattern = this._future.pattern;
+    timeline._generation = this._future.generation;
+    timeline._past = new Node(this._pattern, this._generation, this._past);
+    timeline._future = this._future.next;
     return timeline;
   }
 
@@ -109,13 +96,62 @@ export default class Timeline {
    * @return {Timeline} The new timeline.
    */
   previous() {
-    if (this.entriesBefore === 0) {
+    if (!this.hasPrevious()) {
       throw new Error("No previous pattern");
     }
 
     const timeline = new Timeline();
-    timeline._patterns = this._patterns;
-    timeline._index = this._index - 1;
+    timeline._pattern = this._past.pattern;
+    timeline._generation = this._past.generation;
+    timeline._past = this._past.next;
+    timeline._future = new Node(this._pattern, this._generation, this._future);
     return timeline;
+  }
+
+  /**
+   * Returns true if this timeline has any patterns before the present pattern, false otherwise.
+   *
+   * @return {Boolean} True if this timeline has any patterns before the present pattern, false
+   * otherwise.
+   */
+  hasPrevious() {
+    return this._past !== null;
+  }
+}
+
+/**
+ * An immutable singly-linked list node representing a pattern in the timeline.
+ */
+class Node {
+  /**
+   * Creates a new node.
+   *
+   * @param {Pattern} pattern - The pattern.
+   * @param {number} generation - The generation number.
+   * @param {?Node} next - The next node in the list.
+   */
+  constructor(pattern, generation, next) {
+    /**
+     * The pattern.
+     *
+     * @type {Pattern}
+     */
+    this.pattern = pattern;
+
+    /**
+     * The generation number.
+     *
+     * @type {number}
+     */
+    this.generation = generation;
+
+    /**
+     * The next node in the list.
+     *
+     * @type {?Node}
+     */
+    this.next = next;
+
+    Object.freeze(this);
   }
 }

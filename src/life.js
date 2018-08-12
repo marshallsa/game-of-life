@@ -293,7 +293,7 @@ export default class Life extends React.Component {
           </label>
           <button
             className="item"
-            disabled={this.state.timeline.patternsBefore === 0}
+            disabled={!this.state.timeline.hasPrevious()}
             onClick={this._previous}
           >
             {"<"}
