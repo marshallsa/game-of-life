@@ -1,4 +1,4 @@
-import DragMotion from "./dragmotion.js";
+import Drag from "./drag.js";
 
 import React from "react";
 import PropTypes from "prop-types";
@@ -68,9 +68,9 @@ export default class Board extends React.Component {
   /**
    * Tracks the mouse when it's dragged across the board.
    *
-   * @type {?DragMotion}
+   * @type {?Drag}
    */
-  _dragMotion = null;
+  _drag = null;
 
   /**
    * The current mouse position, or null if the mouse isn't on the board.
@@ -167,7 +167,7 @@ export default class Board extends React.Component {
   _handleMouseDown(event) {
     this._mousePosition = {x: event.clientX, y: event.clientY};
     if (event.button === 0) {
-      this._dragMotion = new DragMotion(event.clientX, event.clientY);
+      this._drag = new Drag(event.clientX, event.clientY);
     }
   }
 
@@ -182,11 +182,11 @@ export default class Board extends React.Component {
 
     // Pan the board if the mouse is dragged.
     if (event.buttons & 1) {
-      const [dx, dy] = this._dragMotion.update(event.clientX, event.clientY);
-      if (dx !== 0 || dy !== 0) {
+      this._drag = this._drag.to(event.clientX, event.clientY);
+      if (this._drag.deltaX !== 0 || this._drag.deltaY !== 0) {
         this.props.onCenterChange(
-          this.props.centerRow - dy / this.props.cellSize,
-          this.props.centerColumn - dx / this.props.cellSize
+          this.props.centerRow - this._drag.deltaY / this.props.cellSize,
+          this.props.centerColumn - this._drag.deltaX / this.props.cellSize
         );
         this._canvas.current.style.cursor = "pointer";
       }
@@ -207,14 +207,14 @@ export default class Board extends React.Component {
   _handleMouseUp(event) {
     this._mousePosition = {x: event.clientX, y: event.clientY};
 
-    if (event.button === 0 && !this._dragMotion.moved) {
+    if (event.button === 0 && !this._drag.moved) {
       this.props.onClick(
         Math.floor((event.clientY - this._translation.y) / this.props.cellSize),
         Math.floor((event.clientX - this._translation.x) / this.props.cellSize)
       );
     }
 
-    this._dragMotion = null;
+    this._drag = null;
     this._canvas.current.style.cursor = "";
   }
 
