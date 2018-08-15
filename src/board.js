@@ -207,7 +207,7 @@ export default class Board extends React.Component {
   _handleMouseUp(event) {
     this._mousePosition = {x: event.clientX, y: event.clientY};
 
-    if (event.button === 0 && !this._drag.moved) {
+    if (event.button === 0 && !this._drag.hasMoved) {
       this.props.onClick(
         Math.floor((event.clientY - this._translation.y) / this.props.cellSize),
         Math.floor((event.clientX - this._translation.x) / this.props.cellSize)

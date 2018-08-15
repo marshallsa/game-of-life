@@ -51,7 +51,7 @@ export default class Pattern {
    *
    * @type {boolean}
    */
-  get empty() {
+  get isEmpty() {
     for (const cell of this.liveCells()) {
       return false;
     }
@@ -93,7 +93,7 @@ export default class Pattern {
    * @param {number} column - The column number of the cell.
    * @return {Cell} The cell at the given row and column.
    */
-  get(row, column) {
+  cell(row, column) {
     const key = makeKey(row, column);
     if (this._activeCells.has(key)) {
       return this._activeCells.get(key);
@@ -111,13 +111,15 @@ export default class Pattern {
    * @param {number} column - The new column the pattern is centered on.
    * @return {Pattern} A copy of this pattern centered at the given row and column.
    */
-  center(row, column) {
+  centered(row, column) {
     const rows = Array.from(this.liveCells()).map(cell => cell.row);
     const rowShift = row - Math.round((Math.min(...rows) + Math.max(...rows)) / 2);
     const columns = Array.from(this.liveCells()).map(cell => cell.column);
     const columnShift = column - Math.round((Math.min(...columns) + Math.max(...columns)) / 2);
 
-    return this._map(cell => new Cell(cell.row + rowShift, cell.column + columnShift, cell.alive));
+    return this._map(
+      cell => new Cell(cell.row + rowShift, cell.column + columnShift, cell.isAlive)
+    );
   }
 
   /**
@@ -128,13 +130,13 @@ export default class Pattern {
    * @param {number} pivotColumn - The column of the pivot cell.
    * @return {Pattern} A copy of this pattern rotated about the given pivot cell.
    */
-  rotate(direction, pivotRow, pivotColumn) {
+  rotated(direction, pivotRow, pivotColumn) {
     const sign = direction === Rotation.CLOCKWISE ? 1 : -1;
 
     return this._map(cell => new Cell(
       pivotRow + sign * (cell.column - pivotColumn),
       pivotColumn - sign * (cell.row - pivotRow),
-      cell.alive
+      cell.isAlive
     ));
   }
 
@@ -145,7 +147,7 @@ export default class Pattern {
    */
   * liveCells() {
     for (const cell of this._activeCells.values()) {
-      if (cell.alive) {
+      if (cell.isAlive) {
         yield cell;
       }
     }
@@ -169,7 +171,7 @@ export default class Pattern {
     // Change the cells.
     const changes = [];
     for (const cell of cells) {
-      if (cell.alive !== this.get(cell.row, cell.column).alive) {
+      if (cell.isAlive !== this.cell(cell.row, cell.column).isAlive) {
         const key = makeKey(cell.row, cell.column);
         pattern._activeCells.set(key, cell);
         pattern._stableCells.delete(key);
@@ -195,7 +197,7 @@ export default class Pattern {
    * @param {Pattern} pattern - The pattern to merge with this pattern.
    * @return {Pattern} The resulting pattern.
    */
-  merge(pattern) {
+  merged(pattern) {
     return this.withCells(pattern.liveCells());
   }
 
@@ -211,11 +213,11 @@ export default class Pattern {
     // Simulate each active cell.
     const changes = [];
     for (const [key, cell] of this._activeCells) {
-      const next = cell.next(this._neighbors(cell).filter(neighbor => neighbor.alive).length);
-      if (cell.alive !== next.alive) {
+      const next = cell.next(this._neighbors(cell).filter(neighbor => neighbor.isAlive).length);
+      if (cell.isAlive !== next.isAlive) {
         pattern._activeCells.set(key, next);
         changes.push(next);
-      } else if (next.alive) {
+      } else if (next.isAlive) {
         pattern._stableCells.set(key, next);
       }
     }
@@ -243,7 +245,7 @@ export default class Pattern {
     for (let i = cell.row - 1; i <= cell.row + 1; i++) {
       for (let j = cell.column - 1; j <= cell.column + 1; j++) {
         if (i !== cell.row || j !== cell.column) {
-          neighbors.push(this.get(i, j));
+          neighbors.push(this.cell(i, j));
         }
       }
     }

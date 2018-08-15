@@ -49,7 +49,7 @@ export default class Life extends React.Component {
    * @type {Object}
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
-   * @property {boolean} playing - True if the game is playing, or false if the game is paused.
+   * @property {boolean} isPlaying - True if the game is playing, or false if the game is paused.
    * @property {?PatternPreset} selectedPreset - The selected pattern preset, or null if no preset
    * is selected.
    * @property {?Pattern} selectedPattern - The pattern for the selected pattern preset, or null if
@@ -63,7 +63,7 @@ export default class Life extends React.Component {
   state = {
     cellSize: 10,
     frequency: 5,
-    playing: false,
+    isPlaying: false,
     selectedPreset: null,
     selectedPattern: null,
     width: 0,
@@ -94,26 +94,26 @@ export default class Life extends React.Component {
    */
   @autobind
   _playPause(event) {
-    let playing;
+    let isPlaying;
     if (event.type === "change" && event.target.type === "checkbox") {
-      playing = event.target.checked;
+      isPlaying = event.target.checked;
     } else if (event.type === "keyup" && event.key === " " && event.target.type !== "checkbox") {
-      playing = !this.state.playing;
+      isPlaying = !this.state.isPlaying;
     } else {
       return;
     }
 
-    if (playing && !this.state.playing) {
+    if (isPlaying && !this.state.isPlaying) {
       const tick = () => {
-        if (this.state.playing) {
+        if (this.state.isPlaying) {
           this.setState({timeline: this.state.timeline.next()});
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
       };
-      this.setState({playing}, tick);
-    } else if (!playing && this.state.playing) {
+      this.setState({isPlaying}, tick);
+    } else if (!isPlaying && this.state.isPlaying) {
       window.clearTimeout(this._tickId);
-      this.setState({playing});
+      this.setState({isPlaying});
     }
   }
 
@@ -151,7 +151,7 @@ export default class Life extends React.Component {
     if (preset !== null) {
       this.setState({
         selectedPreset: preset,
-        selectedPattern: Pattern.fromPreset(preset).center(
+        selectedPattern: Pattern.fromPreset(preset).centered(
           Math.floor(this.state.centerRow),
           Math.floor(this.state.centerColumn)
         )
@@ -181,7 +181,7 @@ export default class Life extends React.Component {
   @autobind
   _handleMouseMove(row, column) {
     if (this.state.selectedPattern !== null) {
-      this.setState({selectedPattern: this.state.selectedPattern.center(row, column)});
+      this.setState({selectedPattern: this.state.selectedPattern.centered(row, column)});
     }
   }
 
@@ -197,14 +197,16 @@ export default class Life extends React.Component {
       this.setState({
         selectedPreset: null,
         selectedPattern: null,
-        timeline: this.state.timeline.with(this.state.timeline.pattern.merge(this.state.selectedPattern))
+        timeline: this.state.timeline.with(
+          this.state.timeline.pattern.merged(this.state.selectedPattern)
+        )
       });
     } else {
       this.setState({
-        playing: false,
+        isPlaying: false,
         timeline: this.state.timeline.with(
           this.state.timeline.pattern.withCells([
-            new Cell(row, column, !this.state.timeline.pattern.get(row, column).alive)
+            new Cell(row, column, !this.state.timeline.pattern.cell(row, column).isAlive)
           ])
         )
       });
@@ -224,7 +226,7 @@ export default class Life extends React.Component {
     if (this.state.selectedPattern !== null) {
       // Rotate the selected pattern.
       this.setState({
-        selectedPattern: this.state.selectedPattern.rotate(
+        selectedPattern: this.state.selectedPattern.rotated(
           wheelY > 0 ? Rotation.COUNTERCLOCKWISE : Rotation.CLOCKWISE,
           row,
           column
@@ -246,7 +248,7 @@ export default class Life extends React.Component {
   @autobind
   _next() {
     this.setState({
-      playing: false,
+      isPlaying: false,
       timeline: this.state.timeline.next()
     });
   }
@@ -257,7 +259,7 @@ export default class Life extends React.Component {
   @autobind
   _previous() {
     this.setState({
-      playing: false,
+      isPlaying: false,
       timeline: this.state.timeline.previous()
     });
   }
@@ -267,9 +269,9 @@ export default class Life extends React.Component {
    */
   @autobind
   _clear() {
-    if (!this.state.timeline.pattern.empty) {
+    if (!this.state.timeline.pattern.isEmpty) {
       this.setState({
-        playing: false,
+        isPlaying: false,
         timeline: this.state.timeline.with(new Pattern())
       });
     }
@@ -299,7 +301,7 @@ export default class Life extends React.Component {
             {"<"}
           </button>
           <label className="item">
-            <input type="checkbox" checked={this.state.playing} onChange={this._playPause}/>
+            <input type="checkbox" checked={this.state.isPlaying} onChange={this._playPause}/>
             <span>Play</span>
           </label>
           <button className="item" onClick={this._next}>{">"}</button>

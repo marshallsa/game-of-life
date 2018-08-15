@@ -223,7 +223,7 @@ function PatternPreview(props) {
       cellSize={cellSize}
       centerRow={props.pattern.height % 2 !== 0 ? 0.5 : 0}
       centerColumn={props.pattern.width % 2 !== 0 ? 0.5 : 0}
-      pattern={props.pattern.center(0, 0)}
+      pattern={props.pattern.centered(0, 0)}
     />
   );
 }

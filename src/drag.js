@@ -17,14 +17,14 @@ export default class Drag {
    *
    * @type {boolean}
    */
-  _active = false;
+  _isActive = false;
 
   /**
    * True if the mouse has moved since the drag was activated.
    *
    * @type {number}
    */
-  _moved = false;
+  _hasMoved = false;
 
   /**
    * Creates a new `Drag` object.
@@ -90,8 +90,8 @@ export default class Drag {
    *
    * @type {number}
    */
-  get moved() {
-    return this._moved;
+  get hasMoved() {
+    return this._hasMoved;
   }
 
   /**
@@ -102,13 +102,13 @@ export default class Drag {
    * @return {Drag} The new `Drag` object.
    */
   to(x, y) {
-    if (this._active) {
+    if (this._isActive) {
       const drag = new Drag();
       drag._start = this._start;
       drag._end = {x, y};
       drag._delta = {x: x - this._end.x, y: y - this._end.y};
-      drag._active = true;
-      drag._moved = true;
+      drag._isActive = true;
+      drag._hasMoved = true;
       return drag;
     }
 
@@ -116,7 +116,7 @@ export default class Drag {
       const drag = new Drag();
       drag._start = {x, y};
       drag._end = {x, y};
-      drag._active = true;
+      drag._isActive = true;
       return drag;
     }
 

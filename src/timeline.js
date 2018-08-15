@@ -70,7 +70,7 @@ export default class Timeline {
    * @return {Timeline} The new timeline.
    */
   next() {
-    if (this._future === null && this._pattern.empty) {
+    if (this._future === null && this._pattern.isEmpty) {
       return this;
     }
 
