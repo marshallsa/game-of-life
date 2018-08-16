@@ -8,6 +8,10 @@
     "getpatterns": "babel-node --presets node8 --ignore \"node_modules/(?!lodash-es)\" getpatterns.js"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.2",
+    "@fortawesome/free-regular-svg-icons": "^5.2.0",
+    "@fortawesome/free-solid-svg-icons": "^5.2.0",
+    "@fortawesome/react-fontawesome": "^0.1.2",
     "lodash-es": "^4.17.10",
     "prop-types": "^15.6.2",
     "react": "^16.4.1",

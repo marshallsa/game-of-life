@@ -47,6 +47,22 @@ canvas {
 .toolbar label:first-child > span {
   margin-right: 10px;
 }
+.toolbar button {
+  background: none;
+  border: 0;
+  font-size: 16pt;
+}
+.toolbar button[disabled] {
+  color: #ccc;
+}
+.toolbar .controls button {
+  font-size: 22pt;
+}
+.toolbar .right {
+  position: absolute;
+  right: 0;
+  margin-right: 5px;
+}
 
 .sidebar {
   position: absolute;

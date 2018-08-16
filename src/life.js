@@ -7,6 +7,15 @@ import patternPresets from "../patterns.json";
 
 import React from "react";
 
+import {faFile} from "@fortawesome/free-regular-svg-icons";
+import {
+  faCaretLeft,
+  faCaretRight,
+  faPauseCircle,
+  faPlayCircle
+} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+
 /**
  * The minimum width and height of each cell in pixels.
  *
@@ -282,18 +291,19 @@ export default class Life extends React.Component {
               onChange={this._handleFrequencyChange}
             />
           </label>
-          <button
-            className="item"
-            disabled={!this._timeline.hasPrevious()}
-            onClick={this._previous}
-          >
-            {"<"}
-          </button>
-          <button className="item" onClick={this._playPause}>
-            {this.state.isPlaying ? "Pause" : "Play"}
-          </button>
-          <button className="item" onClick={this._next}>{">"}</button>
-          <button className="item" onClick={this._clear}>Clear</button>
+
+          <span className="item controls">
+            <button disabled={!this._timeline.hasPrevious()} onClick={this._previous} title="Undo">
+              <FontAwesomeIcon icon={faCaretLeft}/>
+            </button>
+            <button onClick={this._playPause} title={this.state.isPlaying ? "Pause" : "Play"}>
+              <FontAwesomeIcon icon={this.state.isPlaying ? faPauseCircle : faPlayCircle}/>
+            </button>
+            <button onClick={this._next} title="Redo/Next">
+              <FontAwesomeIcon icon={faCaretRight}/>
+            </button>
+          </span>
+
           <label className="item">
             <input
               type="range"
@@ -305,6 +315,10 @@ export default class Life extends React.Component {
             />
             <span>{this.state.cellSize}:1</span>
           </label>
+
+          <button className="item right" onClick={this._clear} title="Clear">
+            <FontAwesomeIcon icon={faFile}/>
+          </button>
         </div>
 
         <div className="sidebar">
