@@ -261,7 +261,7 @@ export default class Life extends React.Component {
    */
   _clear = () => {
     if (!this.state.universe.isEmpty) {
-      this._timeline.add(new Pattern());
+      this._timeline.replace(new Pattern());
       this.setState({isPlaying: false, universe: this._timeline.pattern});
     }
   }
