@@ -2,7 +2,6 @@ import Drag from "./drag.js";
 
 import React from "react";
 import PropTypes from "prop-types";
-import autobind from "autobind-decorator";
 
 /**
  * The background color of the board.
@@ -163,8 +162,7 @@ export default class Board extends React.Component {
    *
    * @param {MouseEvent} event - The mousedown event.
    */
-  @autobind
-  _handleMouseDown(event) {
+  _handleMouseDown = event => {
     this._mousePosition = {x: event.clientX, y: event.clientY};
     if (event.button === 0) {
       this._drag = new Drag(event.clientX, event.clientY);
@@ -176,8 +174,7 @@ export default class Board extends React.Component {
    *
    * @param {MouseEvent} event - The mousemove event.
    */
-  @autobind
-  _handleMouseMove(event) {
+  _handleMouseMove = event => {
     this._mousePosition = {x: event.clientX, y: event.clientY};
 
     // Pan the board if the mouse is dragged.
@@ -203,8 +200,7 @@ export default class Board extends React.Component {
    *
    * @param {MouseEvent} event - The mouseup event.
    */
-  @autobind
-  _handleMouseUp(event) {
+  _handleMouseUp = event => {
     this._mousePosition = {x: event.clientX, y: event.clientY};
 
     if (event.button === 0 && !this._drag.hasMoved) {
@@ -223,8 +219,7 @@ export default class Board extends React.Component {
    *
    * @param {WheelEvent} event - The wheel event.
    */
-  @autobind
-  _handleWheel(event) {
+  _handleWheel = event => {
     this._mousePosition = {x: event.clientX, y: event.clientY};
     this.props.onWheel(
       Math.floor((event.clientY - this._translation.y) / this.props.cellSize),
@@ -239,8 +234,7 @@ export default class Board extends React.Component {
    *
    * @param {MouseEvent} event - The mouseout event.
    */
-  @autobind
-  _handleMouseOut(event) {
+  _handleMouseOut = event => {
     this._mousePosition = null;
   }
 

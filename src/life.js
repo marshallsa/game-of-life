@@ -5,8 +5,6 @@ import PatternPicker from "./patternpicker.js";
 import Timeline from "./timeline.js";
 import patternPresets from "../patterns.json";
 
-import autobind from "autobind-decorator";
-
 import React from "react";
 
 /**
@@ -52,7 +50,7 @@ export default class Life extends React.Component {
    * The game state.
    *
    * @override
-   * @protected
+   * @private
    * @type {Object}
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
@@ -97,8 +95,7 @@ export default class Life extends React.Component {
   /**
    * Plays the game if the game is paused, or pauses the game if the game is playing.
    */
-  @autobind
-  _playPause() {
+  _playPause = () => {
     if (this.state.isPlaying) {
       window.clearTimeout(this._tickId);
       this.setState({isPlaying: false});
@@ -119,8 +116,7 @@ export default class Life extends React.Component {
    *
    * @param {KeyboardEvent} event - The keyup event.
    */
-  @autobind
-  _handleKeyUp(event) {
+  _handleKeyUp = event => {
     if (event.key === " " && event.target.type !== "submit") {
       this._playPause();
     }
@@ -131,8 +127,7 @@ export default class Life extends React.Component {
    *
    * @param {ChangeEvent} event - The event for changing the game frequency.
    */
-  @autobind
-  _handleFrequencyChange(event) {
+  _handleFrequencyChange = event => {
     const frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
     this.setState({frequency});
   }
@@ -142,8 +137,7 @@ export default class Life extends React.Component {
    *
    * @param {ChangeEvent} event - The event for changing the cell size.
    */
-  @autobind
-  _handleSizeChange(event) {
+  _handleSizeChange = event => {
     this.setState({
       cellSize: Math.max(CELL_SIZE_MIN, Math.min(event.target.valueAsNumber, CELL_SIZE_MAX))
     });
@@ -155,8 +149,7 @@ export default class Life extends React.Component {
    * @param {?PatternPreset} preset - The new selected pattern preset or null to clear the selected
    * preset.
    */
-  @autobind
-  _handlePresetChange(preset) {
+  _handlePresetChange = preset => {
     if (preset !== null) {
       this.setState({
         selectedPreset: preset,
@@ -176,8 +169,7 @@ export default class Life extends React.Component {
    * @param {number} row - The row of the new centered cell.
    * @param {number} column - The column of the new centered cell.
    */
-  @autobind
-  _handleCenterChange(row, column) {
+  _handleCenterChange = (row, column) => {
     this.setState({centerRow: row, centerColumn: column});
   }
 
@@ -187,8 +179,7 @@ export default class Life extends React.Component {
    * @param {number} row - The row of the cell below the mouse pointer.
    * @param {number} column - The column of the cell below the mouse pointer.
    */
-  @autobind
-  _handleMouseMove(row, column) {
+  _handleMouseMove = (row, column) => {
     if (this.state.selectedPattern !== null) {
       this.setState({selectedPattern: this.state.selectedPattern.centered(row, column)});
     }
@@ -200,8 +191,7 @@ export default class Life extends React.Component {
    * @param {number} row - The row of the cell that was clicked.
    * @param {number} column - The column of the cell that was clicked.
    */
-  @autobind
-  _handleClick(row, column) {
+  _handleClick = (row, column) => {
     if (this.state.selectedPattern !== null) {
       this._timeline.replace(this.state.universe.merged(this.state.selectedPattern));
       this.setState({
@@ -230,8 +220,7 @@ export default class Life extends React.Component {
    * @param {number} wheelX - The horizontal scroll amount.
    * @param {number} wheelY - The vertical scroll amount.
    */
-  @autobind
-  _handleWheel(row, column, wheelX, wheelY) {
+  _handleWheel = (row, column, wheelX, wheelY) => {
     if (this.state.selectedPattern !== null) {
       // Rotate the selected pattern.
       this.setState({
@@ -254,8 +243,7 @@ export default class Life extends React.Component {
   /**
    * Moves to the next board state.
    */
-  @autobind
-  _next() {
+  _next = () => {
     this._timeline.next();
     this.setState({isPlaying: false, universe: this._timeline.pattern});
   }
@@ -263,8 +251,7 @@ export default class Life extends React.Component {
   /**
    * Moves to the previous board state.
    */
-  @autobind
-  _previous() {
+  _previous = () => {
     this._timeline.previous();
     this.setState({isPlaying: false, universe: this._timeline.pattern});
   }
@@ -272,8 +259,7 @@ export default class Life extends React.Component {
   /**
    * Clears the board.
    */
-  @autobind
-  _clear() {
+  _clear = () => {
     if (!this.state.universe.isEmpty) {
       this._timeline.add(new Pattern());
       this.setState({isPlaying: false, universe: this._timeline.pattern});

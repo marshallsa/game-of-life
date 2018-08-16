@@ -3,8 +3,6 @@ import Pattern from "./pattern.js";
 
 import React from "react";
 
-import autobind from "autobind-decorator";
-
 /**
  * The names of the favorite pattern presets.
  *
@@ -84,8 +82,7 @@ export default class PatternPicker extends React.Component {
    *
    * @param {PatternPreset} preset - The pattern preset to select or deselect.
    */
-  @autobind
-  _togglePreset(preset) {
+  _togglePreset = preset => {
     if (this._isSelected(preset)) {
       this.props.onPresetChange(null);
     } else {
@@ -98,8 +95,7 @@ export default class PatternPicker extends React.Component {
    *
    * @param {ChangeEvent} event - The change event.
    */
-  @autobind
-  _handleCategoryChange(event) {
+  _handleCategoryChange = event => {
     this.setState({category: event.target.value});
     this._presetList.current.scrollTop = 0;
   }
