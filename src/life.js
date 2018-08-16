@@ -42,10 +42,17 @@ const FREQUENCY_MAX = 30;
  */
 export default class Life extends React.Component {
   /**
+   * The timeline of board states.
+   *
+   * @type {Timeline}
+   */
+  _timeline = new Timeline();
+
+  /**
    * The game state.
    *
    * @override
-   * @private
+   * @protected
    * @type {Object}
    * @property {number} cellSize - The width and height of each cell in pixels.
    * @property {number} frequency - The frequency of the game tick in Hertz.
@@ -58,7 +65,7 @@ export default class Life extends React.Component {
    * @property {number} height - The height of the board.
    * @property {number} centerRow - The row of the cell at the center of the board.
    * @property {number} centerColumn - The column of the cell at the center of the board.
-   * @property {Pattern} timeline - The timeline of board states.
+   * @property {Pattern} universe - The current board state.
    */
   state = {
     cellSize: 10,
@@ -70,7 +77,7 @@ export default class Life extends React.Component {
     height: 0,
     centerRow: 0,
     centerColumn: 0,
-    timeline: new Timeline()
+    universe: this._timeline.pattern
   };
 
   /**
@@ -106,7 +113,8 @@ export default class Life extends React.Component {
     if (isPlaying && !this.state.isPlaying) {
       const tick = () => {
         if (this.state.isPlaying) {
-          this.setState({timeline: this.state.timeline.next()});
+          this._timeline.next();
+          this.setState({universe: this._timeline.pattern});
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
       };
@@ -194,21 +202,21 @@ export default class Life extends React.Component {
   @autobind
   _handleClick(row, column) {
     if (this.state.selectedPattern !== null) {
+      this._timeline.replace(this.state.universe.merged(this.state.selectedPattern));
       this.setState({
         selectedPreset: null,
         selectedPattern: null,
-        timeline: this.state.timeline.with(
-          this.state.timeline.pattern.merged(this.state.selectedPattern)
-        )
+        universe: this._timeline.pattern
       });
     } else {
+      this._timeline.replace(
+        this.state.universe.withCells([
+          new Cell(row, column, !this.state.universe.cell(row, column).isAlive)
+        ])
+      );
       this.setState({
         isPlaying: false,
-        timeline: this.state.timeline.with(
-          this.state.timeline.pattern.withCells([
-            new Cell(row, column, !this.state.timeline.pattern.cell(row, column).isAlive)
-          ])
-        )
+        universe: this._timeline.pattern
       });
     }
   }
@@ -247,10 +255,8 @@ export default class Life extends React.Component {
    */
   @autobind
   _next() {
-    this.setState({
-      isPlaying: false,
-      timeline: this.state.timeline.next()
-    });
+    this._timeline.next();
+    this.setState({isPlaying: false, universe: this._timeline.pattern});
   }
 
   /**
@@ -258,10 +264,8 @@ export default class Life extends React.Component {
    */
   @autobind
   _previous() {
-    this.setState({
-      isPlaying: false,
-      timeline: this.state.timeline.previous()
-    });
+    this._timeline.previous();
+    this.setState({isPlaying: false, universe: this._timeline.pattern});
   }
 
   /**
@@ -269,11 +273,9 @@ export default class Life extends React.Component {
    */
   @autobind
   _clear() {
-    if (!this.state.timeline.pattern.isEmpty) {
-      this.setState({
-        isPlaying: false,
-        timeline: this.state.timeline.with(new Pattern())
-      });
+    if (!this.state.universe.isEmpty) {
+      this._timeline.add(new Pattern());
+      this.setState({isPlaying: false, universe: this._timeline.pattern});
     }
   }
 
@@ -295,7 +297,7 @@ export default class Life extends React.Component {
           </label>
           <button
             className="item"
-            disabled={!this.state.timeline.hasPrevious()}
+            disabled={!this._timeline.hasPrevious()}
             onClick={this._previous}
           >
             {"<"}
@@ -333,7 +335,7 @@ export default class Life extends React.Component {
           cellSize={this.state.cellSize}
           centerRow={this.state.centerRow}
           centerColumn={this.state.centerColumn}
-          pattern={this.state.timeline.pattern}
+          pattern={this.state.universe}
           ghost={this.state.selectedPattern}
           onCenterChange={this._handleCenterChange}
           onMouseMove={this._handleMouseMove}

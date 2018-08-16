@@ -1,36 +1,43 @@
 import Pattern from "./pattern.js";
 
 /**
- * An immutable record of a pattern's history as it evolves over time or is edited.
+ * The maximum number of patterns that the timeline can hold.
+ *
+ * @type {number}
+ */
+const MAX_SIZE = 1000;
+
+/**
+ * A record of a pattern's history as it evolves over time or is edited.
  */
 export default class Timeline {
   /**
-   * The present pattern.
+   * The present node in the timeline.
    *
-   * @type {Pattern}
+   * @type {Node}
    */
-  _pattern = new Pattern();
+  _present = new Node(new Pattern(), 0);
 
   /**
-   * The present generation number.
+   * The oldest node in the timeline.
+   *
+   * @type {Node}
+   */
+  _beginning = this._present;
+
+  /**
+   * The number of nodes in the entire timeline.
    *
    * @type {number}
    */
-  _generation = 0;
+  _size = 1;
 
   /**
-   * The list of past patterns.
+   * The number of nodes in the future part of the timeline.
    *
-   * @type {?Node}
+   * @type {number}
    */
-  _past = null;
-
-  /**
-   * The list of future patterns.
-   *
-   * @type {?Node}
-   */
-  _future = null;
+  _futureSize = 0;
 
   /**
    * The present pattern.
@@ -38,7 +45,7 @@ export default class Timeline {
    * @type {Pattern}
    */
   get pattern() {
-    return this._pattern;
+    return this._present.pattern;
   }
 
   /**
@@ -47,65 +54,41 @@ export default class Timeline {
    * @type {number}
    */
   get generation() {
-    return this._generation;
+    return this._present.generation;
   }
 
   /**
-   * Returns a new timeline with the given pattern added after the present pattern. Any other future
-   * patterns are removed from the timeline.
+   * Replaces the next pattern with the given pattern and moves to the next pattern in the new
+   * timeline. The generation number is reset to zero.
    *
-   * @param {Pattern} pattern - The pattern to add.
-   * @return {Timeline} The new timeline.
+   * @param {Pattern} pattern - The pattern to replace the next pattern with.
    */
-  with(pattern) {
-    const timeline = new Timeline();
-    timeline._pattern = pattern;
-    timeline._past = new Node(this._pattern, this._generation, this._past);
-    return timeline;
+  replace(pattern) {
+    this._replace(pattern, 0);
   }
 
   /**
-   * Returns a new timeline that is one pattern ahead of this timeline.
-   *
-   * @return {Timeline} The new timeline.
+   * Moves to the next pattern in the timeline.
    */
   next() {
-    if (this._future === null && this._pattern.isEmpty) {
-      return this;
+    if (this._present.next !== null) {
+      this._present = this._present.next;
+      this._futureSize--;
+    } else if (!this._present.pattern.isEmpty) {
+      this._replace(this.pattern.next(), this.generation + 1);
     }
-
-    if (this._future === null) {
-      const timeline = new Timeline();
-      timeline._pattern = this._pattern.next();
-      timeline._generation = this._generation + 1;
-      timeline._past = new Node(this._pattern, this._generation, this._past);
-      return timeline;
-    }
-
-    const timeline = new Timeline();
-    timeline._pattern = this._future.pattern;
-    timeline._generation = this._future.generation;
-    timeline._past = new Node(this._pattern, this._generation, this._past);
-    timeline._future = this._future.next;
-    return timeline;
   }
 
   /**
-   * Returns a new timeline that is one pattern behind this timeline.
-   *
-   * @return {Timeline} The new timeline.
+   * Moves to the previous pattern in the timeline.
    */
   previous() {
     if (!this.hasPrevious()) {
       throw new Error("No previous pattern");
     }
 
-    const timeline = new Timeline();
-    timeline._pattern = this._past.pattern;
-    timeline._generation = this._past.generation;
-    timeline._past = this._past.next;
-    timeline._future = new Node(this._pattern, this._generation, this._future);
-    return timeline;
+    this._present = this._present.previous;
+    this._futureSize++;
   }
 
   /**
@@ -115,12 +98,35 @@ export default class Timeline {
    * otherwise.
    */
   hasPrevious() {
-    return this._past !== null;
+    return this._present.previous !== null;
+  }
+
+  /**
+   * Replaces the next pattern and generation number with the given pattern and generation number
+   * and moves to the next pattern in the new timeline.
+   *
+   * @param {Pattern} pattern - The pattern to replace the next pattern with.
+   * @param {number} generation - The generation number for the pattern.
+   */
+  _replace(pattern, generation) {
+    // Create a new node that replaces all of the future nodes.
+    this._present.next = new Node(pattern, generation, this._present);
+    this._present = this._present.next;
+    this._size -= this._futureSize;
+    this._futureSize = 0;
+
+    if (this._size === MAX_SIZE) {
+      // Remove the oldest node.
+      this._beginning.next.previous = null;
+      this._beginning = this._beginning.next;
+    } else {
+      this._size++;
+    }
   }
 }
 
 /**
- * An immutable singly-linked list node representing a pattern in the timeline.
+ * A doubly-linked list node representing a pattern in the timeline.
  */
 class Node {
   /**
@@ -128,9 +134,10 @@ class Node {
    *
    * @param {Pattern} pattern - The pattern.
    * @param {number} generation - The generation number.
-   * @param {?Node} next - The next node in the list.
+   * @param {?Node} [previous=null] - The previous node in the list.
+   * @param {?Node} [next=null] - The next node in the list.
    */
-  constructor(pattern, generation, next) {
+  constructor(pattern, generation, previous = null, next = null) {
     /**
      * The pattern.
      *
@@ -146,12 +153,17 @@ class Node {
     this.generation = generation;
 
     /**
+     * The previous node in the list.
+     *
+     * @type {?Node}
+     */
+    this.previous = previous;
+
+    /**
      * The next node in the list.
      *
      * @type {?Node}
      */
     this.next = next;
-
-    Object.freeze(this);
   }
 }
