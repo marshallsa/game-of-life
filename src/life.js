@@ -95,22 +95,14 @@ export default class Life extends React.Component {
   }
 
   /**
-   * Plays or pauses the game.
-   *
-   * @param {ChangeEvent|KeyboardEvent} event - The event that triggered the play or pause.
+   * Plays the game if the game is paused, or pauses the game if the game is playing.
    */
   @autobind
-  _playPause(event) {
-    let isPlaying;
-    if (event.type === "change" && event.target.type === "checkbox") {
-      isPlaying = event.target.checked;
-    } else if (event.type === "keyup" && event.key === " " && event.target.type !== "checkbox") {
-      isPlaying = !this.state.isPlaying;
+  _playPause() {
+    if (this.state.isPlaying) {
+      window.clearTimeout(this._tickId);
+      this.setState({isPlaying: false});
     } else {
-      return;
-    }
-
-    if (isPlaying && !this.state.isPlaying) {
       const tick = () => {
         if (this.state.isPlaying) {
           this._timeline.next();
@@ -118,10 +110,19 @@ export default class Life extends React.Component {
           this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
         }
       };
-      this.setState({isPlaying}, tick);
-    } else if (!isPlaying && this.state.isPlaying) {
-      window.clearTimeout(this._tickId);
-      this.setState({isPlaying});
+      this.setState({isPlaying: true}, tick);
+    }
+  }
+
+  /**
+   * Handles keyup events.
+   *
+   * @param {KeyboardEvent} event - The keyup event.
+   */
+  @autobind
+  _handleKeyUp(event) {
+    if (event.key === " " && event.target.type !== "submit") {
+      this._playPause();
     }
   }
 
@@ -282,7 +283,7 @@ export default class Life extends React.Component {
   /** @override */
   render() {
     return (
-      <div tabIndex="-1" onKeyUp={this._playPause}>
+      <div tabIndex="-1" onKeyUp={this._handleKeyUp}>
         <div className="toolbar">
           <label className="item">
             <span>{this.state.frequency}×</span>
@@ -302,10 +303,9 @@ export default class Life extends React.Component {
           >
             {"<"}
           </button>
-          <label className="item">
-            <input type="checkbox" checked={this.state.isPlaying} onChange={this._playPause}/>
-            <span>Play</span>
-          </label>
+          <button className="item" onClick={this._playPause}>
+            {this.state.isPlaying ? "Pause" : "Play"}
+          </button>
           <button className="item" onClick={this._next}>{">"}</button>
           <button className="item" onClick={this._clear}>Clear</button>
           <label className="item">
