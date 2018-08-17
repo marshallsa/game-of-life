@@ -79,16 +79,36 @@ canvas {
 }
 .pattern-picker .search-bar {
   margin: 0 10px 13px 10px;
+  border: #ccc 1px solid;
+  border-radius: 2px;
+  font-size: small;
+
+  display: flex;
 }
-.pattern-picker .search-bar select, .pattern-picker .search-bar input {
-  box-sizing: border-box;
+.pattern-picker .category-menu {
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  background: #eee;
 }
-.pattern-picker .search-bar select {
-  width: 40%;
+.pattern-picker .category-menu .fa-caret-down {
+  margin-left: 5px;
+}
+.pattern-picker .category-menu, .pattern-picker .search-bar input {
+  padding: 5px;
+}
+.pattern-picker .category-menu select, .pattern-picker .search-bar input {
+  border: 0;
+}
+.pattern-picker .category-menu select {
+  position: absolute;
+  left: 0;
   padding: 2px;
+  opacity: 0;
 }
 .pattern-picker .search-bar input {
-  width: 60%;
+  min-width: 0;
+  flex: 1;
 }
 
 .patterns {

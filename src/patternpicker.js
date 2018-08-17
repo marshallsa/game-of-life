@@ -3,6 +3,26 @@ import Pattern from "./pattern.js";
 
 import React from "react";
 
+import {faCaretDown} from "@fortawesome/free-solid-svg-icons";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+
+/**
+ * A map of search strings to their category names.
+ *
+ * @type {Map<string, string>}
+ */
+const CATEGORIES = new Map([
+  ["favorite", "Favorites"],
+  ["still life", "Still Lifes"],
+  ["oscillator", "Oscillators"],
+  ["spaceship", "Spaceships"],
+  ["puffer", "Puffers"],
+  ["gun", "Guns"],
+  ["methuselah", "Methuselahs"],
+  ["wick", "Wicks"],
+  ["all", "All"]
+]);
+
 /**
  * The names of the favorite pattern presets.
  *
@@ -119,17 +139,15 @@ export default class PatternPicker extends React.Component {
     return (
       <div className="pattern-picker">
         <div className="search-bar">
-          <select value={this.state.category} onChange={this._handleCategoryChange}>
-            <option value="favorite">Favorites</option>
-            <option value="still life">Still Lifes</option>
-            <option value="oscillator">Oscillators</option>
-            <option value="spaceship">Spaceships</option>
-            <option value="puffer">Puffers</option>
-            <option value="gun">Guns</option>
-            <option value="methuselah">Methuselahs</option>
-            <option value="wick">Wicks</option>
-            <option value="all">All</option>
-          </select>
+          <span className="category-menu">
+            {CATEGORIES.get(this.state.category)}
+            <FontAwesomeIcon icon={faCaretDown}/>
+            <select value={this.state.category} onChange={this._handleCategoryChange}>
+              {Array.from(CATEGORIES).map(([value, name]) =>
+                <option value={value}>{name}</option>
+              )}
+            </select>
+          </span>
 
           <input
             placeholder="Search"
