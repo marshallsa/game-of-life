@@ -4,7 +4,8 @@ const StreamZip = require("node-stream-zip");
 
 import sortedUniqBy from "lodash-es/sortedUniqBy";
 
-import Pattern, {readRlePattern} from "./src/pattern.js";
+import Pattern from "./src/pattern.js";
+import {presetFromRle} from "./src/rle.js";
 
 /**
  * The hostname of the server where the ZIP file should be downloaded from.
@@ -97,7 +98,7 @@ function getPatternPresets(zip) {
   return (
     Object.values(zip.entries())
       .filter(entry => entry.name.endsWith(".rle"))
-      .map(entry => readRlePattern(zip.entryDataSync(entry).toString()))
+      .map(entry => presetFromRle(zip.entryDataSync(entry).toString()))
   );
 }
 

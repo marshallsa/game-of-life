@@ -16,10 +16,10 @@ export function presetFromRle(rle) {
 
   // Read the # lines.
   const hashLines = takeWhile(lines, line => line.startsWith("#"));
-  const hash = readHash(hashLines);
+  const hash = parseHash(hashLines);
 
   // Read the header line.
-  const headers = readHeader(lines[hashLines.length]);
+  const headers = parseHeader(lines[hashLines.length]);
 
   // The rest of the RLE string is the pattern itself.
   const pattern = lines.slice(hashLines.length + 1).join("");
