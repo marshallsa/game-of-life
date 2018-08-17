@@ -64,7 +64,7 @@ canvas {
   margin-right: 5px;
 }
 
-.sidebar {
+.pattern-picker {
   position: absolute;
   top: 40px;
   left: 0;
@@ -73,12 +73,9 @@ canvas {
 
   background: #fff;
   border-right: #eee 1px solid;
-}
 
-.pattern-picker {
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 .pattern-picker .search-bar {
   margin: 0 10px 13px 10px;

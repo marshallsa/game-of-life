@@ -3,18 +3,11 @@ import Cell from "./cell.js";
 import Pattern, {Rotation} from "./pattern.js";
 import PatternPicker from "./patternpicker.js";
 import Timeline from "./timeline.js";
+import Toolbar from "./toolbar.js";
+
 import patternPresets from "../patterns.json";
 
 import React from "react";
-
-import {faFile} from "@fortawesome/free-regular-svg-icons";
-import {
-  faCaretLeft,
-  faCaretRight,
-  faPauseCircle,
-  faPlayCircle
-} from "@fortawesome/free-solid-svg-icons";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
 /**
  * The minimum width and height of each cell in pixels.
@@ -102,25 +95,6 @@ export default class Life extends React.Component {
   }
 
   /**
-   * Plays the game if the game is paused, or pauses the game if the game is playing.
-   */
-  _playPause = () => {
-    if (this.state.isPlaying) {
-      window.clearTimeout(this._tickId);
-      this.setState({isPlaying: false});
-    } else {
-      const tick = () => {
-        if (this.state.isPlaying) {
-          this._timeline.next();
-          this.setState({universe: this._timeline.pattern});
-          this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
-        }
-      };
-      this.setState({isPlaying: true}, tick);
-    }
-  }
-
-  /**
    * Handles keyup events.
    *
    * @param {KeyboardEvent} event - The keyup event.
@@ -129,57 +103,6 @@ export default class Life extends React.Component {
     if (event.key === " " && event.target.type !== "submit") {
       this._playPause();
     }
-  }
-
-  /**
-   * Handles events for changing the game frequency.
-   *
-   * @param {ChangeEvent} event - The event for changing the game frequency.
-   */
-  _handleFrequencyChange = event => {
-    const frequency = Math.max(FREQUENCY_MIN, Math.min(event.target.valueAsNumber, FREQUENCY_MAX));
-    this.setState({frequency});
-  }
-
-  /**
-   * Handles events for changing the cell size.
-   *
-   * @param {ChangeEvent} event - The event for changing the cell size.
-   */
-  _handleSizeChange = event => {
-    this.setState({
-      cellSize: Math.max(CELL_SIZE_MIN, Math.min(event.target.valueAsNumber, CELL_SIZE_MAX))
-    });
-  }
-
-  /**
-   * Handles events for changing the selected pattern preset.
-   *
-   * @param {?PatternPreset} preset - The new selected pattern preset or null to clear the selected
-   * preset.
-   */
-  _handlePresetChange = preset => {
-    if (preset !== null) {
-      this.setState({
-        selectedPreset: preset,
-        selectedPattern: Pattern.fromPreset(preset).centered(
-          Math.floor(this.state.centerRow),
-          Math.floor(this.state.centerColumn)
-        )
-      });
-    } else {
-      this.setState({selectedPreset: null, selectedPattern: null});
-    }
-  }
-
-  /**
-   * Handles events for changing the centered cell.
-   *
-   * @param {number} row - The row of the new centered cell.
-   * @param {number} column - The column of the new centered cell.
-   */
-  _handleCenterChange = (row, column) => {
-    this.setState({centerRow: row, centerColumn: column});
   }
 
   /**
@@ -250,6 +173,25 @@ export default class Life extends React.Component {
   }
 
   /**
+   * Plays the game if the game is paused, or pauses the game if the game is playing.
+   */
+  _playPause = () => {
+    if (this.state.isPlaying) {
+      window.clearTimeout(this._tickId);
+      this.setState({isPlaying: false});
+    } else {
+      const tick = () => {
+        if (this.state.isPlaying) {
+          this._timeline.next();
+          this.setState({universe: this._timeline.pattern});
+          this._tickId = window.setTimeout(tick, 1000 / this.state.frequency);
+        }
+      };
+      this.setState({isPlaying: true}, tick);
+    }
+  }
+
+  /**
    * Moves to the next board state.
    */
   _next = () => {
@@ -275,60 +217,79 @@ export default class Life extends React.Component {
     }
   }
 
+  /**
+   * Changes the game frequency.
+   *
+   * @param {number} frequency - The new frequency.
+   */
+  _setFrequency = frequency => {
+    this.setState({frequency});
+  }
+
+  /**
+   * Changes the cell size.
+   *
+   * @param {number} cellSize - The new cell size.
+   */
+  _setCellSize = cellSize => {
+    this.setState({cellSize});
+  }
+
+  /**
+   * Changes the selected pattern preset.
+   *
+   * @param {?PatternPreset} preset - The new selected pattern preset or null to clear the selected
+   * preset.
+   */
+  _setSelectedPreset = preset => {
+    if (preset !== null) {
+      this.setState({
+        selectedPreset: preset,
+        selectedPattern: Pattern.fromPreset(preset).centered(
+          Math.floor(this.state.centerRow),
+          Math.floor(this.state.centerColumn)
+        )
+      });
+    } else {
+      this.setState({selectedPreset: null, selectedPattern: null});
+    }
+  }
+
+  /**
+   * Changes the centered cell.
+   *
+   * @param {number} row - The row of the new centered cell.
+   * @param {number} column - The column of the new centered cell.
+   */
+  _setCenterCell = (row, column) => {
+    this.setState({centerRow: row, centerColumn: column});
+  }
+
   /** @override */
   render() {
     return (
       <div tabIndex="-1" onKeyUp={this._handleKeyUp}>
-        <div className="toolbar">
-          <label className="item">
-            <span>{this.state.frequency}×</span>
-            <input
-              type="range"
-              min={FREQUENCY_MIN}
-              max={FREQUENCY_MAX}
-              step="1"
-              value={this.state.frequency}
-              onChange={this._handleFrequencyChange}
-            />
-          </label>
-
-          <span className="item controls">
-            <button disabled={!this._timeline.hasPrevious()} onClick={this._previous} title="Undo">
-              <FontAwesomeIcon icon={faCaretLeft}/>
-            </button>
-            <button onClick={this._playPause} title={this.state.isPlaying ? "Pause" : "Play"}>
-              <FontAwesomeIcon icon={this.state.isPlaying ? faPauseCircle : faPlayCircle}/>
-            </button>
-            <button onClick={this._next} title="Redo/Next">
-              <FontAwesomeIcon icon={faCaretRight}/>
-            </button>
-          </span>
-
-          <label className="item">
-            <input
-              type="range"
-              min={CELL_SIZE_MIN}
-              max={CELL_SIZE_MAX}
-              step="1"
-              value={this.state.cellSize}
-              onChange={this._handleSizeChange}
-            />
-            <span>{this.state.cellSize}:1</span>
-          </label>
-
-          <button className="item right" onClick={this._clear} title="Clear">
-            <FontAwesomeIcon icon={faFile}/>
-          </button>
-        </div>
-
-        <div className="sidebar">
-          <PatternPicker
-            presets={patternPresets}
-            selectedPreset={this.state.selectedPreset}
-            onPresetChange={this._handlePresetChange}
-          />
-        </div>
-
+        <Toolbar
+          frequency={this.state.frequency}
+          frequencyMin={FREQUENCY_MIN}
+          frequencyMax={FREQUENCY_MAX}
+          cellSize={this.state.cellSize}
+          cellSizeMin={CELL_SIZE_MIN}
+          cellSizeMax={CELL_SIZE_MAX}
+          canUndo={this._timeline.hasPrevious()}
+          isPlaying={this.state.isPlaying}
+          onFrequencyChange={this._setFrequency}
+          onSizeChange={this._setCellSize}
+          onUndo={this._previous}
+          onPlayPause={this._playPause}
+          onRedo={this._next}
+          onClear={this._clear}
+        />
+        <PatternPicker
+          presets={patternPresets}
+          selectedPreset={this.state.selectedPreset}
+          onPresetChange={this._setSelectedPreset}
+        />
         <Board
           width={this.state.width}
           height={this.state.height}
@@ -337,7 +298,7 @@ export default class Life extends React.Component {
           centerColumn={this.state.centerColumn}
           pattern={this.state.universe}
           ghost={this.state.selectedPattern}
-          onCenterChange={this._handleCenterChange}
+          onCenterChange={this._setCenterCell}
           onMouseMove={this._handleMouseMove}
           onClick={this._handleClick}
           onWheel={this._handleWheel}
